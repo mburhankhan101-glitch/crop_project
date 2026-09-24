@@ -62,13 +62,25 @@ Run `python s2_ndvi.py --help` for all options (cloud thresholds, map size, outp
 - The shaded band is the spread across the square. It's wide because a 400 m square covers
   several fields with different crops.
 
+## Spectral signatures
+
+`spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
+and plots reflectance against wavelength: a wheat field at its peak, the same field after
+harvest, the Ravi at Shahdara, Walled City rooftops, and a cloud.
+
+```powershell
+python spectral_signatures.py      # edit TARGETS in the file to try your own pixels
+```
+
+![Spectral signatures around Lahore](output/spectral_signatures.png)
+
 ## Roadmap
 
 Each step adds a feature and teaches one concept.
 
 **Satellite fundamentals**
 - [x] NDVI time series from Sentinel-2 with cloud masking
-- [ ] Spectral signatures: all bands for crop, soil and water pixels
+- [x] Spectral signatures: all bands for crop, soil, water, city and cloud pixels
 - [ ] More indices: NDWI, NDMI (SWIR, 20 m), EVI
 - [ ] Real field boundaries (GeoJSON polygons) instead of a square
 - [ ] Better cloud masking: explain every dip, buffer cloud edges
