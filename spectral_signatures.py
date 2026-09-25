@@ -22,7 +22,7 @@ import numpy as np
 import rasterio
 from rasterio.warp import transform as warp_transform
 
-from s2_ndvi import reflectance, search
+from s2_indices import reflectance, search
 
 # Sentinel-2 has 13 bands; B10 (cirrus) is only in Level-1C, so Level-2A has these 12.
 BANDS = ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B8A", "B09", "B11", "B12"]
