@@ -22,7 +22,7 @@ import numpy as np
 import rasterio
 from rasterio.warp import transform as warp_transform
 
-from s2_indices import reflectance, search
+from s2_indices import INDICES, reflectance, search
 
 # Sentinel-2 has 13 bands; B10 (cirrus) is only in Level-1C, so Level-2A has these 12.
 BANDS = ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B8A", "B09", "B11", "B12"]
@@ -82,9 +82,9 @@ def signature(target):
 
 
 def indices(sig):
+    """Every index in s2_indices.INDICES, computed at this one pixel."""
     r = dict(zip(BANDS, sig["reflectance"]))
-    nd = lambda a, b: (r[a] - r[b]) / (r[a] + r[b])
-    return {"NDVI": nd("B08", "B04"), "NDWI": nd("B03", "B08"), "NDMI": nd("B8A", "B11")}
+    return {name: float(spec["formula"](r)) for name, spec in INDICES.items()}
 
 
 def plot(sigs, path):
@@ -132,10 +132,10 @@ def main():
     with ThreadPoolExecutor(max_workers=len(TARGETS)) as pool:
         sigs = list(pool.map(signature, TARGETS))
 
-    print(f"\n{'pixel':26} {'date':11} {'SCL class':15} {'NDVI':>6} {'NDWI':>6} {'NDMI':>6}")
+    print(f"\n{'pixel':26} {'date':11} {'SCL class':15} " + " ".join(f"{name:>6}" for name in INDICES))
     for s in sigs:
         i = indices(s)
-        print(f"{s['label']:26} {s['date']:11} {s['scl']:15} {i['NDVI']:+6.2f} {i['NDWI']:+6.2f} {i['NDMI']:+6.2f}")
+        print(f"{s['label']:26} {s['date']:11} {s['scl']:15} " + " ".join(f"{i[name]:+6.2f}" for name in INDICES))
 
     csv_path = os.path.join("output", "spectral_signatures.csv")
     with open(csv_path, "w", newline="") as f:

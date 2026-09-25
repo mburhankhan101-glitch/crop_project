@@ -1,18 +1,30 @@
 # crop_project
 
 Crop health in Punjab from space. Pulls free Sentinel-2 satellite images for any spot,
-masks out clouds, and plots how green the crops there have been every ~5 days.
+masks out clouds, and tracks greenness, water and moisture indices every ~5 days.
 
 A learning project: I'm using it to build up satellite imaging and ML skills step by step,
 alongside Stanford CS229. See the [roadmap](#roadmap) for where it's going.
 
-![NDVI time series for farmland south-west of Lahore](output/ndvi_timeseries.png)
+![Spectral indices over time for farmland south-west of Lahore](output/indices_timeseries.png)
 
-The curve above is a 400 m block of farmland between Raiwind and Kasur, Sep 2025 – Sep 2026.
-Punjab's whole farming year is visible in it: rice peaking in September, the harvest dip in
-Oct–Nov, wheat peaking in early March, the April harvest, fallow summer, and rice again.
+The panels above are a 400 m block of farmland between Raiwind and Kasur, Sep 2025 – Sep 2026.
+Punjab's whole farming year is visible: rice peaking in September, the harvest dip in Oct–Nov,
+wheat peaking in early March, the April harvest, fallow summer, and rice again.
 
-![True colour and NDVI map](output/ndvi_map.png)
+![True colour and index maps](output/indices_map.png)
+
+## Indices
+
+| Index | Measures | Formula | Pixel size |
+|---|---|---|---|
+| **NDVI** | greenness | (NIR − red) / (NIR + red) | 10 m |
+| **NDWI** | open water | (green − NIR) / (green + NIR) | 10 m |
+| **NDMI** | moisture in leaves and soil | (NIR narrow − SWIR1) / (NIR narrow + SWIR1) | 20 m |
+| **EVI** | greenness, less saturated in dense crops, less affected by haze | 2.5 (NIR − red) / (NIR + 6 red − 7.5 blue + 1) | 10 m |
+| **NDRE** | chlorophyll, via the red edge; keeps responding where NDVI flattens | (NIR narrow − red edge 1) / (NIR narrow + red edge 1) | 20 m |
+
+Adding another index is one entry in the `INDICES` table at the top of `s2_indices.py`.
 
 ## How it works
 
@@ -22,17 +34,18 @@ Sentinel-2 L2A scenes on Microsoft Planetary Computer (free, no account)
   ▼
 For each scene (8 in parallel)
   │  lat/lon → UTM metres → pixel window
-  │  HTTP range reads of just that window from the Cloud-Optimized GeoTIFFs:
-  │    B04 red, B08 near-infrared (10 m), SCL cloud classification (20 m → 10 m, nearest)
+  │  HTTP range reads of just that window from the Cloud-Optimized GeoTIFFs,
+  │    only for the bands the chosen indices need, plus the SCL cloud classification
+  │  20 m bands (B05, B8A, B11, SCL) upsampled to the 10 m grid with nearest neighbour
   │  keep vegetation / soil / water pixels, drop the scene if < 80% of the square is clear
   │  reflectance = (DN − 1000) / 10000   (offset applies from processing baseline 04.00)
-  │  NDVI = (NIR − red) / (NIR + red)  → mean and spread over the square
+  │  each index per pixel → mean and spread over the square
   ▼
-output/ndvi.csv, ndvi_timeseries.png, ndvi_map.png
+output/indices.csv, indices_timeseries.png, indices_map.png
 ```
 
 Only a few hundred KB are downloaded per band per scene, instead of the full ~100 MB tile,
-so a year of data takes about 30 seconds.
+so a year of all four indices takes about a minute.
 
 ## Setup (Windows)
 
@@ -47,20 +60,25 @@ pip install -r requirements.txt
 ## Run
 
 ```powershell
-python s2_ndvi.py                              # default: farmland between Raiwind and Kasur
-python s2_ndvi.py --lat 31.30 --lon 74.07      # any other spot (copy lat/lon from Google Maps)
-python s2_ndvi.py --size 200                   # smaller square = closer to a single field
-python s2_ndvi.py --start 2023-11-01 --end 2024-05-31   # one wheat season
+python s2_indices.py                              # default: farmland between Raiwind and Kasur
+python s2_indices.py --lat 31.30 --lon 74.07      # any other spot (copy lat/lon from Google Maps)
+python s2_indices.py --indices NDVI,NDMI          # only some indices (fewer bands, faster)
+python s2_indices.py --size 200                   # smaller square = closer to a single field
+python s2_indices.py --start 2023-11-01 --end 2024-05-31   # one wheat season
 ```
 
-Run `python s2_ndvi.py --help` for all options (cloud thresholds, map size, output folder).
+Run `python s2_indices.py --help` for all options (cloud thresholds, map size, output folder).
 
-## Reading the chart
+## Reading the charts
 
-- **NDVI** measures greenness. Healthy leaves absorb red light and reflect a lot of near-infrared.
-- Below ~0.2 is bare soil or a harvested field; above ~0.6 is dense healthy crop.
+- **NDVI**: below ~0.2 is bare soil or a harvested field; above ~0.6 is dense healthy crop.
+- **NDWI** is mostly negative over farmland; it goes above 0 only over open water.
+- **NDMI** rises with water in the canopy and in wet soil, and drops below 0 when fields dry out.
+- **EVI** follows NDVI on a lower scale, but saturates less at peak growth and shrugs off thin haze.
+- **NDRE** peaks and starts falling earlier than NDVI as the wheat ripens and loses chlorophyll.
 - The shaded band is the spread across the square. It's wide because a 400 m square covers
   several fields with different crops.
+- In the NDMI map the 20 m pixels show as visibly bigger blocks.
 
 ## Spectral signatures
 
@@ -81,7 +99,7 @@ Each step adds a feature and teaches one concept.
 **Satellite fundamentals**
 - [x] NDVI time series from Sentinel-2 with cloud masking
 - [x] Spectral signatures: all bands for crop, soil, water, city and cloud pixels
-- [ ] More indices: NDWI, NDMI (SWIR, 20 m), EVI
+- [x] More indices: NDWI, NDMI (SWIR, 20 m), EVI, NDRE (red edge)
 - [ ] Real field boundaries (GeoJSON polygons) instead of a square
 - [ ] Better cloud masking: explain every dip, buffer cloud edges
 - [ ] Local cache + gap-filled, smoothed 5-day time series
