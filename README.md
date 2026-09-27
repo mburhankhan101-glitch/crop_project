@@ -107,6 +107,29 @@ while both eastern fields carry shorter crops in winter and green up again by Ju
 
 ![Field boundaries on true colour and NDVI](output/fields_map.png)
 
+### Catching what the cloud mask misses
+
+The SCL cloud mask misses cloud edges and, above all, haze: on 20 Feb 2026 it called the
+fields 100% clear while haze cut NDVI by a third. So every observation is also checked,
+and suspicious ones are **flagged, not dropped** (`flag` and `haze_score` columns in `fields.csv`,
+hollow points on the chart):
+
+| Check | Rule | Catches |
+|---|---|---|
+| Cloud edges | grow SCL cloud and shadow by 2 pixels (`--cloud-buffer`) | the fringe around clouds |
+| `haze` | field median of blue − red above 0.008 (`--haze`) | haze and smog, which brighten blue more than red |
+| `dip` | NDVI more than 0.1 below both neighbouring dates, each within 20 days (`--dip`, `--dip-days`) | any short dip that recovers; a harvest doesn't recover, so it isn't flagged |
+
+The haze threshold was calibrated on these fields: clear dense wheat sits near blue − red = 0,
+the hazy days at +0.010 to +0.023. The scene's own aerosol estimate (the AOT band) turned out
+useless for this: it was normal on the haziest day, because haze it had estimated correctly
+would already have been removed.
+
+`fields_flagged.png` shows every flagged date in true colour next to the clearest date, so
+each flag can be checked by eye:
+
+![Flagged dates in true colour](output/fields_flagged.png)
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -128,7 +151,7 @@ Each step adds a feature and teaches one concept.
 - [x] Spectral signatures: all bands for crop, soil, water, city and cloud pixels
 - [x] More indices: NDWI, NDMI (SWIR, 20 m), EVI, NDRE (red edge)
 - [x] Real field boundaries (GeoJSON polygons) instead of a square
-- [ ] Better cloud masking: explain every dip, buffer cloud edges
+- [x] Better cloud masking: explain every dip, buffer cloud edges
 - [ ] Local cache + gap-filled, smoothed 5-day time series
 
 **Machine learning (CS229)**

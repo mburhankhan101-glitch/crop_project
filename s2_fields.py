@@ -4,13 +4,22 @@ Spectral indices per field, from free Sentinel-2 images on Microsoft Planetary C
 Reads field boundaries from a GeoJSON file, shrinks each field inwards so only pixels
 entirely inside it count, and tracks every index in s2_indices.INDICES field by field.
 
+The SCL cloud mask misses cloud edges and haze, so each observation is also checked and
+flagged (not dropped):
+    cloud edges  SCL cloud and shadow pixels are grown by --cloud-buffer pixels first
+    haze         median blue minus red above --haze; haze brightens blue more than red
+    dip          NDVI more than --dip below the observations before and after it, both within
+                 --dip-days; crops don't lose that much greenness and regrow within days
+
     python s2_fields.py                                        # fields.geojson, all indices
     python s2_fields.py --fields my_fields.geojson --indices NDVI,NDMI
     python s2_fields.py --buffer 20                            # shrink fields by 20 m instead of 10 m
+    python s2_fields.py --cloud-buffer 0 --haze 1              # plain SCL mask, no haze flags
 
 Writes to ./output/:
-    fields.csv             one row per field per clear date: mean, median and spread of each index
-    fields_timeseries.png  one panel per index, one line per field (median)
+    fields.csv             one row per field per clear date: index statistics, haze score and flag
+    fields_timeseries.png  one panel per index, one line per field (median); flagged points hollow
+    fields_flagged.png     true-colour thumbnails of every flagged date, to check each one by eye
     fields_map.png         field boundaries on true colour and NDVI for the latest date all fields were clear
 """
 import argparse
@@ -29,6 +38,8 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
+from matplotlib.lines import Line2D
+from numpy.lib.stride_tricks import sliding_window_view
 from rasterio.enums import Resampling
 from rasterio.features import geometry_mask
 from rasterio.transform import Affine
@@ -43,6 +54,10 @@ GRID_M = 20
 TWENTY_M_BANDS = {"B05", "B06", "B07", "B8A", "B11", "B12"}
 COLORS = plt.cm.tab10.colors
 
+# SCL classes that get grown outwards: cloud shadow, medium and high probability cloud, thin cirrus.
+CLOUD_SCL = [3, 8, 9, 10]
+HAZE_BANDS = {"B02", "B04"}
+
 
 def parse_args():
     today = date.today()
@@ -55,6 +70,13 @@ def parse_args():
     p.add_argument("--end", default=str(today), help="YYYY-MM-DD (default: today)")
     p.add_argument("--max-cloud", type=float, default=50, help="skip scenes with more cloud than this %% overall")
     p.add_argument("--min-clear", type=float, default=0.8, help="fraction of a field that must be cloud-free")
+    p.add_argument("--cloud-buffer", type=int, default=2,
+                   help="grow SCL cloud and shadow by this many 10 m pixels (default 2)")
+    p.add_argument("--haze", type=float, default=0.008,
+                   help="flag haze when a field's median blue minus red exceeds this (default 0.008, "
+                        "calibrated on the fields near Raiwind)")
+    p.add_argument("--dip", type=float, default=0.1, help="flag an NDVI dip this far below both neighbours")
+    p.add_argument("--dip-days", type=int, default=20, help="neighbours must be within this many days")
     p.add_argument("--out", default="output", help="output folder")
     args = p.parse_args()
 
@@ -62,6 +84,8 @@ def parse_args():
     unknown = [name for name in args.indices if name not in INDICES]
     if unknown:
         p.error(f"unknown index {', '.join(unknown)}; choose from {', '.join(INDICES)}")
+    if "NDVI" not in args.indices:
+        args.indices.insert(0, "NDVI")  # the dip check needs it
     return args
 
 
@@ -135,16 +159,26 @@ def field_masks(fields, crs, args):
     from several threads at once; it can occasionally return an empty mask.)
     """
     inner = fields.to_crs(crs).geometry.buffer(-args.buffer)
-    bounds = inner[~inner.is_empty].total_bounds
+    # Read a margin around the fields so clouds just outside them can be grown inwards.
+    margin = args.cloud_buffer * PIXEL_M
+    bounds = inner[~inner.is_empty].total_bounds + np.array([-margin, -margin, margin, margin])
     transform, shape = snapped_grid(bounds, PIXEL_M)
     masks = [None if g.is_empty else geometry_mask([g], out_shape=shape, transform=transform, invert=True)
              for g in inner]
     return bounds, masks
 
 
+def grow(mask, pixels):
+    """Grow a boolean mask outwards by `pixels` in every direction, diagonals included."""
+    if pixels <= 0:
+        return mask
+    size = 2 * pixels + 1
+    return sliding_window_view(np.pad(mask, pixels), (size, size)).any(axis=(-2, -1))
+
+
 def scene_fields(item, names, layouts, args):
     """One row per field that is clear enough on this date."""
-    bands = bands_for(args.indices)
+    bands = sorted(set(bands_for(args.indices)) | HAZE_BANDS)
     bounds, masks = layouts[item_crs(item)]
     try:
         read = read_bounds(item, bounds, bands + ["SCL"])
@@ -155,11 +189,14 @@ def scene_fields(item, names, layouts, args):
         return []
     arrays, _ = read
 
-    valid = np.isin(arrays["SCL"], CLEAR_SCL)
+    # SCL often misses the thin fringe around clouds and shadows, so grow them first.
+    cloud = grow(np.isin(arrays["SCL"], CLOUD_SCL), args.cloud_buffer)
+    valid = np.isin(arrays["SCL"], CLEAR_SCL) & ~cloud
     for band in bands:
         valid &= arrays[band] > 0
     refl = {band: reflectance(arrays[band], item) for band in bands}
     values = {name: INDICES[name]["formula"](refl) for name in args.indices}
+    blue_minus_red = refl["B02"] - refl["B04"]
 
     rows = []
     for name, inside in zip(names, masks):
@@ -170,7 +207,8 @@ def scene_fields(item, names, layouts, args):
         if not use.any() or clear < args.min_clear:
             continue
         row = {"field": name, "date": item.datetime.date(), "pixels": int(use.sum()),
-               "clear_fraction": float(clear), "item": item}
+               "clear_fraction": float(clear), "haze_score": float(np.median(blue_minus_red[use])),
+               "item": item}
         for idx in args.indices:
             v = values[idx][use]
             row[f"{idx}_mean"] = float(v.mean())
@@ -178,6 +216,27 @@ def scene_fields(item, names, layouts, args):
             row[f"{idx}_std"] = float(v.std())
         rows.append(row)
     return rows
+
+
+def add_flags(rows, names, args):
+    """Mark suspicious observations with the reasons, instead of dropping them.
+
+    rows must be sorted by date. Sets row["flag"] to "ok", "haze", "dip" or "haze+dip".
+    """
+    for name in names:
+        mine = [r for r in rows if r["field"] == name]
+        for i, r in enumerate(mine):
+            reasons = []
+            if r["haze_score"] > args.haze:
+                reasons.append("haze")
+            if 0 < i < len(mine) - 1:
+                before, after = mine[i - 1], mine[i + 1]
+                close = ((r["date"] - before["date"]).days <= args.dip_days
+                         and (after["date"] - r["date"]).days <= args.dip_days)
+                v = r["NDVI_median"]
+                if close and v < before["NDVI_median"] - args.dip and v < after["NDVI_median"] - args.dip:
+                    reasons.append("dip")
+            r["flag"] = "+".join(reasons) or "ok"
 
 
 def plot_timeseries(rows, names, args, path):
@@ -189,10 +248,13 @@ def plot_timeseries(rows, names, args, path):
         spec = INDICES[idx]
         shade_seasons(ax, dates[0], dates[-1])
         for color, name in zip(COLORS, names):
-            mine = [r for r in rows if r["field"] == name]
-            if mine:
-                ax.plot([r["date"] for r in mine], [r[f"{idx}_median"] for r in mine],
-                        "-o", color=color, ms=3, lw=1.5, label=name)
+            ok = [r for r in rows if r["field"] == name and r["flag"] == "ok"]
+            flagged = [r for r in rows if r["field"] == name and r["flag"] != "ok"]
+            # The line runs through trusted points only; flagged ones stay visible but hollow.
+            ax.plot([r["date"] for r in ok], [r[f"{idx}_median"] for r in ok],
+                    "-o", color=color, ms=3, lw=1.5, label=name)
+            ax.scatter([r["date"] for r in flagged], [r[f"{idx}_median"] for r in flagged],
+                       s=30, facecolor="white", edgecolor=color, lw=1.4, zorder=3)
         for y, text in spec["lines"]:
             ax.axhline(y, color="grey", lw=0.8, ls=":")
             ax.text(dates[0], y, f" {text}", fontsize=7.5, color="grey", va="bottom")
@@ -207,16 +269,91 @@ def plot_timeseries(rows, names, args, path):
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b\n%Y"))
 
     height = fig.get_figheight()
+    n_flagged = sum(r["flag"] != "ok" for r in rows)
     fig.suptitle(f"Median of each index per field  ·  fields shrunk by {args.buffer:g} m  ·  "
-                 f"{len(dates)} dates with at least one clear field", fontsize=12, y=1 - 0.12 / height, va="top")
+                 f"{len(dates)} dates  ·  {n_flagged} observations flagged",
+                 fontsize=12, y=1 - 0.12 / height, va="top")
     handles, _ = axes[0, 0].get_legend_handles_labels()
-    handles += [mpatches.Patch(color="#f2c14e", alpha=0.35, label="Rabi (Nov–Apr)"),
+    handles += [Line2D([], [], ls="", marker="o", ms=5, mfc="white", mec="grey", mew=1.4,
+                       label="flagged (haze or dip), not joined"),
+                mpatches.Patch(color="#f2c14e", alpha=0.35, label="Rabi (Nov–Apr)"),
                 mpatches.Patch(color="#4e9af2", alpha=0.3, label="Kharif (May–Oct)")]
     fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1 - 0.42 / height),
                fontsize=8, ncol=min(len(handles), 6), frameon=False)
     fig.tight_layout(rect=(0, 0, 1, 1 - 0.75 / height))
     fig.savefig(path, dpi=150)
     plt.close(fig)
+
+
+def draw_outline(ax, geom, transform, **style):
+    """Draw a polygon's outline on an image axis whose pixels follow transform."""
+    for poly in getattr(geom, "geoms", [geom]):
+        if poly.is_empty:
+            continue
+        xs, ys = poly.exterior.xy
+        cols, rows = ~transform * (np.array(xs), np.array(ys))
+        ax.plot(cols - 0.5, rows - 0.5, **style)
+
+
+def true_colour(item, bounds):
+    """Brightened true-colour image over bounds, and its transform; None off the tile edge."""
+    read = read_bounds(item, bounds, ["B02", "B03", "B04"])
+    if read is None:
+        return None
+    arrays, transform = read
+    refl = {band: reflectance(arrays[band], item) for band in arrays}
+    return np.clip(np.dstack([refl["B04"], refl["B03"], refl["B02"]]) * 3.5, 0, 1), transform
+
+
+def plot_flagged(rows, fields, args, path):
+    """True-colour thumbnails of every flagged date, next to the clearest date for comparison.
+
+    All thumbnails share one brightness stretch, so haze shows up as a milky, washed-out look.
+    """
+    flagged = sorted({r["date"] for r in rows if r["flag"] != "ok"})
+    if not flagged:
+        return False
+    by_date = {}
+    for r in rows:
+        by_date.setdefault(r["date"], []).append(r)
+    all_ok = [d for d, rs in by_date.items() if len(rs) == len(fields) and all(r["flag"] == "ok" for r in rs)]
+    reference = min(all_ok, key=lambda d: max(r["haze_score"] for r in by_date[d])) if all_ok else None
+    dates = ([reference] if reference else []) + flagged
+
+    def thumbnail(d):
+        item = by_date[d][0]["item"]
+        outer = fields.to_crs(item_crs(item)).geometry
+        return true_colour(item, outer.buffer(150).total_bounds), outer
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        images = list(pool.map(thumbnail, dates))
+
+    ncols = min(len(dates), 4)
+    nrows = math.ceil(len(dates) / ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(3.8 * ncols, 4.1 * nrows), squeeze=False)
+    for ax, d, (image, outer) in zip(axes.ravel(), dates, images):
+        ax.set_xticks([])
+        ax.set_yticks([])
+        if image is None:
+            ax.set_title(f"{d}\n(off the tile edge)", fontsize=8)
+            continue
+        rgb, transform = image
+        ax.imshow(rgb)
+        for color, geom in zip(COLORS, outer):
+            draw_outline(ax, geom, transform, color=color, lw=1.4)
+        if d == reference:
+            ax.set_title(f"{d}\nclearest date, for comparison", fontsize=8, fontweight="bold")
+        else:
+            notes = [f"{r['field'].split('_')[-1]}: {r['flag']} (NDVI {r['NDVI_median']:.2f})"
+                     for r in by_date[d] if r["flag"] != "ok"]
+            ax.set_title(f"{d}\n" + "\n".join(notes), fontsize=7.5)
+    for ax in axes.ravel()[len(dates):]:
+        ax.axis("off")
+    fig.suptitle("Flagged observations in true colour, all at the same brightness", fontsize=11)
+    fig.tight_layout(rect=(0, 0, 1, 0.97))
+    fig.savefig(path, dpi=120)
+    plt.close(fig)
+    return True
 
 
 def plot_map(item, fields, args, path):
@@ -240,19 +377,11 @@ def plot_map(item, fields, args, path):
     axes[1].set_title("NDVI")
     fig.colorbar(im, ax=axes[1], fraction=0.046, pad=0.04)
 
-    def draw(ax, geom, **style):
-        for poly in getattr(geom, "geoms", [geom]):
-            if poly.is_empty:
-                continue
-            xs, ys = poly.exterior.xy
-            cols, rows = ~transform * (np.array(xs), np.array(ys))
-            ax.plot(cols - 0.5, rows - 0.5, **style)
-
     for ax in axes:
         for color, name, full, shrunk in zip(COLORS, fields[args.name], outer, inner):
-            draw(ax, full, color="white", lw=2.4)
-            draw(ax, full, color=color, lw=1.3)
-            draw(ax, shrunk, color="white", lw=0.9, ls=":")
+            draw_outline(ax, full, transform, color="white", lw=2.4)
+            draw_outline(ax, full, transform, color=color, lw=1.3)
+            draw_outline(ax, shrunk, transform, color="white", lw=0.9, ls=":")
             cx, cy = ~transform * (full.centroid.x, full.centroid.y)
             ax.text(cx, cy, name, ha="center", va="center", fontsize=7.5,
                     bbox=dict(fc="white", ec=color, alpha=0.85, lw=1))
@@ -297,22 +426,30 @@ def main():
     if not rows:
         print("No clear observations. Try a longer date range, a higher --max-cloud or a smaller --buffer.")
         return
+    add_flags(rows, names, args)
 
     csv_path = os.path.join(args.out, "fields.csv")
     stats = [f"{idx}_{stat}" for idx in args.indices for stat in ("mean", "median", "std")]
     with open(csv_path, "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["field", "date", "pixels", "clear_fraction"] + stats)
+        w.writerow(["field", "date", "pixels", "clear_fraction", "haze_score", "flag"] + stats)
         for r in rows:
-            w.writerow([r["field"], r["date"], r["pixels"], f"{r['clear_fraction']:.2f}"]
-                       + [f"{r[s]:.4f}" for s in stats])
+            w.writerow([r["field"], r["date"], r["pixels"], f"{r['clear_fraction']:.2f}",
+                        f"{r['haze_score']:.4f}", r["flag"]] + [f"{r[s]:.4f}" for s in stats])
 
     plot_timeseries(rows, names, args, os.path.join(args.out, "fields_timeseries.png"))
+    plot_flagged(rows, fields, args, os.path.join(args.out, "fields_flagged.png"))
     all_clear = [d for d in sorted({r["date"] for r in rows}, reverse=True)
-                 if sum(r["date"] == d for r in rows) == len(names)]
+                 if sum(r["date"] == d and r["flag"] == "ok" for r in rows) == len(names)]
     if all_clear:
         item = next(r["item"] for r in rows if r["date"] == all_clear[0])
         plot_map(item, fields, args, os.path.join(args.out, "fields_map.png"))
+
+    print("\nFlagged observations (kept in fields.csv, drawn hollow on the chart):")
+    for r in rows:
+        if r["flag"] != "ok":
+            print(f"  {r['field']:22} {r['date']}  {r['flag']:9} NDVI {r['NDVI_median']:.2f}  "
+                  f"haze score {r['haze_score']:+.3f}")
 
     idx = args.indices[0]
     print(f"\n{'field':22} {'dates':>5}   {idx} median: {'peak':>17} {'lowest':>17} {'latest':>17}")
@@ -325,7 +462,7 @@ def main():
         cell = lambda r: f"{r[key]:+.2f} {r['date']}"
         hi, lo = max(mine, key=lambda r: r[key]), min(mine, key=lambda r: r[key])
         print(f"{name:22} {len(mine):5d}   {'':{len(idx) + 8}} {cell(hi):>17} {cell(lo):>17} {cell(mine[-1]):>17}")
-    print(f"\nSaved fields.csv, fields_timeseries.png and fields_map.png in ./{args.out}/")
+    print(f"\nSaved fields.csv, fields_timeseries.png, fields_flagged.png and fields_map.png in ./{args.out}/")
 
 
 if __name__ == "__main__":
