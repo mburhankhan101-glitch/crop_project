@@ -102,7 +102,8 @@ of each index), `fields_timeseries.png` and `fields_map.png`.
 
 The three fields here looked like one block of rice in September, but they are farmed
 differently the rest of the year: `field1_west` follows the classic rice–wheat rotation
-(wheat peaks in March, then a bare summer with standing water in July before rice),
+(wheat peaks in March, then bare soil until it is flooded for transplanting in late June:
+NDVI drops to 0.03 and NDWI reaches its yearly high on 27 June, then NDMI jumps as the rice goes in),
 while both eastern fields carry shorter crops in winter and green up again by June.
 
 ![Field boundaries on true colour and NDVI](output/fields_map.png)
@@ -119,6 +120,7 @@ hollow points on the chart):
 | Cloud edges | grow SCL cloud and shadow by 2 pixels (`--cloud-buffer`) | the fringe around clouds |
 | `haze` | field median of blue − red above 0.008 (`--haze`) | haze and smog, which brighten blue more than red |
 | `dip` | NDVI more than 0.1 below both neighbouring dates, each within 20 days (`--dip`, `--dip-days`) | any short dip that recovers; a harvest doesn't recover, so it isn't flagged |
+| `scene_haze` | another field was flagged `haze` on the same date | haze over bare or sparse fields, where soil keeps blue − red too low for the haze test |
 
 The haze threshold was calibrated on these fields: clear dense wheat sits near blue − red = 0,
 the hazy days at +0.010 to +0.023. The scene's own aerosol estimate (the AOT band) turned out

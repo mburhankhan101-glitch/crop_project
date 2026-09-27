@@ -221,7 +221,8 @@ def scene_fields(item, names, layouts, args):
 def add_flags(rows, names, args):
     """Mark suspicious observations with the reasons, instead of dropping them.
 
-    rows must be sorted by date. Sets row["flag"] to "ok", "haze", "dip" or "haze+dip".
+    rows must be sorted by date. Sets row["flag"] to "ok", or reasons joined with "+":
+    haze, dip, scene_haze.
     """
     for name in names:
         mine = [r for r in rows if r["field"] == name]
@@ -237,6 +238,15 @@ def add_flags(rows, names, args):
                 if close and v < before["NDVI_median"] - args.dip and v < after["NDVI_median"] - args.dip:
                     reasons.append("dip")
             r["flag"] = "+".join(reasons) or "ok"
+
+    # Haze is in the air, not in a field. The blue - red test only works over dense crops
+    # (soil pulls it far below zero), so one hazy field marks every field on that date.
+    # This assumes the fields lie within a few km of each other.
+    hazy_dates = {r["date"] for r in rows if "haze" in r["flag"].split("+")}
+    for r in rows:
+        reasons = r["flag"].split("+")
+        if r["date"] in hazy_dates and "haze" not in reasons:
+            r["flag"] = "+".join(["scene_haze"] + [x for x in reasons if x != "ok"])
 
 
 def plot_timeseries(rows, names, args, path):
@@ -275,7 +285,7 @@ def plot_timeseries(rows, names, args, path):
                  fontsize=12, y=1 - 0.12 / height, va="top")
     handles, _ = axes[0, 0].get_legend_handles_labels()
     handles += [Line2D([], [], ls="", marker="o", ms=5, mfc="white", mec="grey", mew=1.4,
-                       label="flagged (haze or dip), not joined"),
+                       label="flagged (haze, scene haze or dip), not joined"),
                 mpatches.Patch(color="#f2c14e", alpha=0.35, label="Rabi (Nov–Apr)"),
                 mpatches.Patch(color="#4e9af2", alpha=0.3, label="Kharif (May–Oct)")]
     fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, 1 - 0.42 / height),
