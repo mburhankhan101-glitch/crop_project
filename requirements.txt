@@ -3,3 +3,4 @@ matplotlib
 rasterio
 pystac-client
 planetary-computer
+geopandas

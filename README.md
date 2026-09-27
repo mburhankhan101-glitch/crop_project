@@ -80,6 +80,33 @@ Run `python s2_indices.py --help` for all options (cloud thresholds, map size, o
   several fields with different crops.
 - In the NDMI map the 20 m pixels show as visibly bigger blocks.
 
+## Per-field statistics
+
+`s2_fields.py` does the same per field instead of per square. Field boundaries come from
+`fields.geojson` (drawn on geojson.io, one polygon per field, with a `name` property).
+Each field is shrunk inwards by 10 m so only pixels entirely inside it count, and a field is
+skipped on a date unless at least 80% of its own pixels are cloud-free.
+
+```powershell
+python s2_fields.py                                  # fields.geojson, all indices
+python s2_fields.py --fields my_fields.geojson --indices NDVI,NDMI
+python s2_fields.py --buffer 20                      # shrink by 20 m (stricter for 20 m bands)
+```
+
+Before downloading anything it prints each field's size and how many pure 10 m and 20 m
+pixels it has, since small fields leave very few 20 m pixels for NDMI and NDRE.
+Results go to `output/fields.csv` (one row per field per clear date: mean, median and spread
+of each index), `fields_timeseries.png` and `fields_map.png`.
+
+![Per-field index medians over time](output/fields_timeseries.png)
+
+The three fields here looked like one block of rice in September, but they are farmed
+differently the rest of the year: `field1_west` follows the classic rice–wheat rotation
+(wheat peaks in March, then a bare summer with standing water in July before rice),
+while both eastern fields carry shorter crops in winter and green up again by June.
+
+![Field boundaries on true colour and NDVI](output/fields_map.png)
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -100,7 +127,7 @@ Each step adds a feature and teaches one concept.
 - [x] NDVI time series from Sentinel-2 with cloud masking
 - [x] Spectral signatures: all bands for crop, soil, water, city and cloud pixels
 - [x] More indices: NDWI, NDMI (SWIR, 20 m), EVI, NDRE (red edge)
-- [ ] Real field boundaries (GeoJSON polygons) instead of a square
+- [x] Real field boundaries (GeoJSON polygons) instead of a square
 - [ ] Better cloud masking: explain every dip, buffer cloud edges
 - [ ] Local cache + gap-filled, smoothed 5-day time series
 

@@ -1,0 +1,8 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type": "Feature", "properties": {"name": "field1_west", "kharif_2026": "rice", "rabi_2026": "wheat"}, "geometry": {"type": "Polygon", "coordinates": [[[74.3032139, 31.1942032], [74.3012347, 31.1942032], [74.3012347, 31.1922547], [74.3032282, 31.1922547], [74.3032139, 31.1942032]]]}},
+    {"type": "Feature", "properties": {"name": "field1_northeast", "kharif_2026": "rice", "rabi_2026": "unknown"}, "geometry": {"type": "Polygon", "coordinates": [[[74.3044709, 31.1942032], [74.3032139, 31.1942032], [74.3032231, 31.1929497], [74.3044709, 31.1929565], [74.3044709, 31.1942032]]]}},
+    {"type": "Feature", "properties": {"name": "field1_southeast", "kharif_2026": "rice", "rabi_2026": "unknown"}, "geometry": {"type": "Polygon", "coordinates": [[[74.3044709, 31.1922547], [74.3044709, 31.1929565], [74.3032231, 31.1929497], [74.3032282, 31.1922547], [74.3044709, 31.1922547]]]}}
+  ]
+}

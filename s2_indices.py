@@ -141,10 +141,15 @@ def bands_for(indices):
 
 def search(lat, lon, start, end, max_cloud):
     """Find Sentinel-2 scenes over the point, keeping the least cloudy one per day."""
+    return search_geometry({"type": "Point", "coordinates": [lon, lat]}, start, end, max_cloud)
+
+
+def search_geometry(geometry, start, end, max_cloud):
+    """Find Sentinel-2 scenes touching a GeoJSON geometry, keeping the least cloudy one per day."""
     catalog = pystac_client.Client.open(STAC_URL, modifier=planetary_computer.sign_inplace)
     items = catalog.search(
         collections=["sentinel-2-l2a"],
-        intersects={"type": "Point", "coordinates": [lon, lat]},
+        intersects=geometry,
         datetime=f"{start}/{end}",
         query={"eo:cloud_cover": {"lt": max_cloud}},
     ).item_collection()
