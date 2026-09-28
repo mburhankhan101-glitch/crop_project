@@ -132,6 +132,42 @@ each flag can be checked by eye:
 
 ![Flagged dates in true colour](output/fields_flagged.png)
 
+## Regular 5-day series and crop seasons
+
+`s2_series.py` turns each field's irregular, partly flagged observations into one value every
+5 days on a grid shared by all fields (from 1 September), which comparisons and classifiers need.
+It reads `output/fields.csv`, so it needs no network and runs in seconds.
+
+```powershell
+python s2_series.py                       # after s2_fields.py
+python s2_series.py --window 7            # force Savitzky-Golay smoothing over 7 steps (35 days)
+python s2_series.py --max-gap 20          # leave gaps over 20 days empty instead of 30
+```
+
+1. Flagged observations are dropped.
+2. Linear interpolation fills the grid, but never across a gap longer than 30 days and never
+   before the first or after the last observation. Those stay empty: the 32-day monsoon gap
+   (15 Jul to 16 Aug 2026) is where rice went from mud to full crop, and a straight line through
+   it would be off by about 0.2 NDVI.
+3. Savitzky-Golay smoothing, with the window chosen by **hold-out validation**: hide 10% of the
+   clear observations, rebuild the series without them, and measure the error at the hidden dates.
+   Here plain interpolation won (mean error 0.038 NDVI); every smoothing window did worse, and wider
+   windows worse still, because the flags had already removed the noise and smoothing only blurs the
+   harvest cliffs, where the largest errors are.
+4. Phenology per field and crop season: peak, and start and end where the curve is halfway between
+   its base and its peak. Anything in a gap or outside the data is left empty with a note.
+
+Outputs: `series.csv` (long format), `series_matrix.csv` (one row per field, one column per index
+and date: the feature matrix for a classifier), `phenology.csv` and `series.png`.
+
+![5-day NDVI series with crop seasons](output/series.png)
+
+`field1_west`'s wheat season runs from 6 Jan to 31 Mar 2026 (84 days between the halfway points,
+peak 0.86 on 5 Mar); `field1_southeast`'s short winter crop from 31 Dec to 10 Feb (40 days).
+
+Downloaded pixel windows are cached in `cache/` (about 3 MB for a year), keyed by scene, band and
+window, so re-running `s2_fields.py` takes about 10 seconds instead of one to four minutes.
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -154,7 +190,7 @@ Each step adds a feature and teaches one concept.
 - [x] More indices: NDWI, NDMI (SWIR, 20 m), EVI, NDRE (red edge)
 - [x] Real field boundaries (GeoJSON polygons) instead of a square
 - [x] Better cloud masking: explain every dip, buffer cloud edges
-- [ ] Local cache + gap-filled, smoothed 5-day time series
+- [x] Local cache + gap-filled, smoothed 5-day time series
 
 **Machine learning (CS229)**
 - [ ] Labelled dataset of 60–100 fields by crop system

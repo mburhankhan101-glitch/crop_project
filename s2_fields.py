@@ -16,6 +16,9 @@ flagged (not dropped):
     python s2_fields.py --buffer 20                            # shrink fields by 20 m instead of 10 m
     python s2_fields.py --cloud-buffer 0 --haze 1              # plain SCL mask, no haze flags
 
+Downloaded pixel windows are cached in ./cache/, so a second run only downloads new scenes
+and takes seconds. Use --no-cache to bypass it.
+
 Writes to ./output/:
     fields.csv             one row per field per clear date: index statistics, haze score and flag
     fields_timeseries.png  one panel per index, one line per field (median); flagged points hollow
@@ -26,6 +29,8 @@ import argparse
 import csv
 import math
 import os
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 
@@ -54,6 +59,9 @@ GRID_M = 20
 TWENTY_M_BANDS = {"B05", "B06", "B07", "B8A", "B11", "B12"}
 COLORS = plt.cm.tab10.colors
 
+# Pixel windows already downloaded are kept here; None switches caching off (--no-cache).
+CACHE_DIR = "cache"
+
 # SCL classes that get grown outwards: cloud shadow, medium and high probability cloud, thin cirrus.
 CLOUD_SCL = [3, 8, 9, 10]
 HAZE_BANDS = {"B02", "B04"}
@@ -78,6 +86,8 @@ def parse_args():
     p.add_argument("--dip", type=float, default=0.1, help="flag an NDVI dip this far below both neighbours")
     p.add_argument("--dip-days", type=int, default=20, help="neighbours must be within this many days")
     p.add_argument("--out", default="output", help="output folder")
+    p.add_argument("--cache", default="cache", help="folder for downloaded pixel windows (default: cache)")
+    p.add_argument("--no-cache", action="store_true", help="always download, and don't save anything")
     args = p.parse_args()
 
     args.indices = [name.strip().upper() for name in args.indices.split(",") if name.strip()]
@@ -129,11 +139,23 @@ def pure_pixels(geom, res):
     return int(geometry_mask([geom], out_shape=shape, transform=transform, invert=True).sum())
 
 
+def cache_path(item, band, x0, y0, x1, y1):
+    """Where one band's window of one scene is cached.
+
+    The key holds everything that decides the content: the scene (whose ID includes ESA's
+    processing time, so a reprocessed scene gets a new ID and never hits a stale file),
+    the band, and the window. Everything computed from the pixels (indices, masks, flags)
+    stays out of the key, so changing that code never invalidates the cache.
+    """
+    return os.path.join(CACHE_DIR, item.id, f"{band}_{x0:.0f}_{y0:.0f}_{x1:.0f}_{y1:.0f}.npy")
+
+
 def read_bounds(item, bounds, bands):
     """Read every band over bounds (in the tile's coordinates) onto one 10 m grid.
 
     20 m bands are upsampled with nearest neighbour. Returns (arrays, transform),
-    or None if the area runs off the edge of this tile.
+    or None if the area runs off the edge of this tile. Windows are cached on disk
+    unless CACHE_DIR is None.
     """
     transform, shape = snapped_grid(bounds, PIXEL_M)
     x0, y1 = transform.c, transform.f
@@ -141,6 +163,10 @@ def read_bounds(item, bounds, bands):
 
     out = {}
     for band in bands:
+        path = cache_path(item, band, x0, y0, x1, y1) if CACHE_DIR else None
+        if path and os.path.exists(path):
+            out[band] = np.load(path)
+            continue
         with rasterio.open(item.assets[band].href) as src:
             win = from_bounds(x0, y0, x1, y1, src.transform).round_offsets().round_lengths()
             inside = (win.col_off >= 0 and win.row_off >= 0
@@ -148,6 +174,13 @@ def read_bounds(item, bounds, bands):
             if not inside:
                 return None
             out[band] = src.read(1, window=win, out_shape=shape, resampling=Resampling.nearest)
+        if path:
+            # Write to a temporary name first so a crash or a parallel thread never leaves half a file.
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            tmp = f"{path}.{threading.get_ident()}.tmp"
+            with open(tmp, "wb") as f:
+                np.save(f, out[band])
+            os.replace(tmp, path)
     return out, transform
 
 
@@ -405,8 +438,11 @@ def plot_map(item, fields, args, path):
 
 
 def main():
+    global CACHE_DIR
     args = parse_args()
     os.makedirs(args.out, exist_ok=True)
+    CACHE_DIR = None if args.no_cache else args.cache
+    started = time.monotonic()
     fields = load_fields(args)
     names = list(fields[args.name])
 
@@ -472,7 +508,8 @@ def main():
         cell = lambda r: f"{r[key]:+.2f} {r['date']}"
         hi, lo = max(mine, key=lambda r: r[key]), min(mine, key=lambda r: r[key])
         print(f"{name:22} {len(mine):5d}   {'':{len(idx) + 8}} {cell(hi):>17} {cell(lo):>17} {cell(mine[-1]):>17}")
-    print(f"\nSaved fields.csv, fields_timeseries.png, fields_flagged.png and fields_map.png in ./{args.out}/")
+    print(f"\nSaved fields.csv, fields_timeseries.png, fields_flagged.png and fields_map.png in ./{args.out}/ "
+          f"in {time.monotonic() - started:.0f} s" + (f" (pixel cache: ./{CACHE_DIR}/)" if CACHE_DIR else ""))
 
 
 if __name__ == "__main__":
