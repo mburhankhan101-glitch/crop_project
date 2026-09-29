@@ -85,8 +85,10 @@ def monthly_stack(area_utm, crs, args):
     if os.path.exists(args.flags):
         import pandas as pd
         flags = pd.read_csv(args.flags)
-        per_date = flags.groupby("date")["flag"].agg(lambda f: (f != "ok").all())
-        bad = {date.fromisoformat(d) for d, all_flagged in per_date.items() if all_flagged}
+        # Images judged by eye (label sheets) are stricter: one flagged field is enough to skip a date.
+        rule = (lambda f: (f != "ok").any()) if getattr(args, "skip_any_flagged", False) else (lambda f: (f != "ok").all())
+        per_date = flags.groupby("date")["flag"].agg(rule)
+        bad = {date.fromisoformat(d) for d, flagged in per_date.items() if flagged}
         print(f"Skipping {len(bad)} dates flagged as hazy or cloudy in {args.flags}: "
               + ", ".join(f"{d:%d %b %y}" for d in sorted(bad)))
     items = [it for it in items if it.datetime.date() not in bad]
