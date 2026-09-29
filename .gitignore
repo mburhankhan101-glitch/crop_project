@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 cache/
 .ipynb_checkpoints/
+labels/review_0*.png

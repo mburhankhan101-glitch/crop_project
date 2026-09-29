@@ -11,6 +11,9 @@ Decisions:
 
 Fields not in the decisions file are kept as drawn.
 
+Blind test labels from labels/blind_test_labels.csv (if present) are then merged in, with
+source "blind", their confidence per season, and the labeller and reasoning in the notes.
+
     python s2_review.py
 """
 import argparse
@@ -23,6 +26,7 @@ def parse_args():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--auto", default=os.path.join("labels", "fields_auto.geojson"))
     p.add_argument("--decisions", default=os.path.join("labels", "review_decisions.csv"))
+    p.add_argument("--blind", default=os.path.join("labels", "blind_test_labels.csv"))
     p.add_argument("--out", default=os.path.join("labels", "fields.geojson"))
     return p.parse_args()
 
@@ -56,6 +60,19 @@ def main():
                 props[f"{season}_confidence"] = confidence
         kept.append(f)
 
+    blind = {r["name"]: r for r in csv.DictReader(open(args.blind))} if os.path.exists(args.blind) else {}
+    by_name = {f["properties"]["name"]: f["properties"] for f in kept}
+    for name, r in blind.items():
+        props = by_name.get(name)
+        if props is None:
+            raise SystemExit(f"{args.blind} names a field not in {args.out}: {name}")
+        for season in ("rabi_2026", "kharif_2026"):
+            if r[season]:
+                props[season] = r[season]
+                props[f"{season}_source"] = "blind"
+                props[f"{season}_confidence"] = r[f"{season}_confidence"]
+        props["notes"] = f"{r['labeller']}: {r['notes']}"
+
     with open(args.out, "w") as fh:
         fh.write('{\n  "type": "FeatureCollection",\n  "features": [\n')
         fh.write(",\n".join("    " + json.dumps(f) for f in kept))
@@ -64,6 +81,9 @@ def main():
     to_label = [f for f in test if not f["properties"]["rabi_2026"]]
     print(f"{len(kept)} fields written to {args.out} (" + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())) + ")")
     print(f"  test fields: {len(test)}, of which {len(to_label)} still need blind labels")
+    labelled = [f for f in kept if f["properties"]["rabi_2026"]]
+    print(f"  labelled so far: {len(labelled)} fields ({len(blind)} blind, "
+          f"{sum(f['properties']['review'] == 'non_crop' for f in kept)} non_crop from the review)")
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ so the test set can be kept independent of the data the model learns from.
 |---|---|---|
 | `wheat` | green Jan–Mar, golden in late Mar–Apr, bare after the April harvest | one peak in Feb–Mar, drop in April |
 | `short_winter` | green for only part of the winter (e.g. Dec–Jan), bare while neighbouring wheat is still green | a short peak, harvested by mid-Feb or earlier |
+| `other_winter` | green for most of the winter but on a different schedule from wheat, e.g. already green in early December when wheat fields are still bare (fodder such as berseem, oilseeds, very early-sown wheat) | an early rise, green through the winter |
 | `sugarcane` | green through most of the year, including June when other fields are bare | high most of the year; one long season |
 | `orchard` | dark green and textured all year (trees) | steady and fairly high all year |
 | `fallow` | brown or beige all winter | stays near bare soil (about 0.1–0.25) |

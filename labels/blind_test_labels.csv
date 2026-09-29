@@ -1,0 +1,27 @@
+name,page,rabi_2026,rabi_2026_confidence,kharif_2026,kharif_2026_confidence,labeller,notes
+g0003,1,fallow,low,unknown,low,claude (true-colour chips and visible RGB only),never clearly green in winter; tiny field by a village
+g0009,1,other_winter,low,unknown,low,claude (true-colour chips and visible RGB only),"not fully blind: NDVI profile seen in review_evidence.png; green from 7 Dec through Apr: fodder, oilseed or early wheat; no class fits; relabelled unknown -> other_winter when the class was added"
+g0204,1,wheat,high,fallow,medium,claude (true-colour chips and visible RGB only),"green Jan-Mar, bare by 26 Apr; bare again on 8 Sep"
+g0206,1,other_winter,low,fallow,low,claude (true-colour chips and visible RGB only),"strongly green already on 7 Dec, all winter; very bright bare on 8 Sep; relabelled unknown -> other_winter when the class was added"
+g0303,1,wheat,high,rice,medium,claude (true-colour chips and visible RGB only),"classic wheat; bare 7 Jun, green 8 Sep; golden on 18 Oct 25 (ripe rice)"
+g0306,1,unknown,low,unknown,low,claude (true-colour chips and visible RGB only),"brown all winter, very dark on 26 Apr (water?), next to a pond"
+g0402,1,wheat,high,rice,medium,claude (true-colour chips and visible RGB only),"classic wheat; bare 7 Jun, green 8 Sep"
+g0404,1,wheat,high,fallow,medium,claude (true-colour chips and visible RGB only),classic wheat; bare on 7 Jun and 8 Sep
+g0406,1,non_crop,medium,non_crop,medium,claude (true-colour chips and visible RGB only),red above green on all 8 dates; village texture
+g0408,2,wheat,high,rice,low,claude (true-colour chips and visible RGB only),classic wheat; only weakly green on 8 Sep
+g0409,2,wheat,medium,rice,high,claude (true-colour chips and visible RGB only),"late green-up (weak on 21 Jan); very dark on 7 Jun = flooded paddy, green 8 Sep"
+g0501,2,wheat,medium,unknown,low,claude (true-colour chips and visible RGB only),small; green Feb-Mar; mixed colour on 8 Sep
+g0503,2,wheat,high,rice,medium,claude (true-colour chips and visible RGB only),classic wheat; dark patches on 26 Apr (stubble burning?); green 8 Sep
+g0508,2,unknown,low,unknown,low,claude (true-colour chips and visible RGB only),bare all winter but green on 26 Apr and 18 Oct; next to a brick kiln
+g0600,2,other_winter,low,rice,medium,claude (true-colour chips and visible RGB only),"very green already on 7 Dec, yellowing by 26 Apr: early winter crop, not typical wheat; relabelled unknown -> other_winter when the class was added"
+g0605,2,unknown,low,other_kharif,medium,claude (true-colour chips and visible RGB only),weak green Dec-Jan then bare; green already on 7 Jun (not rice timing)
+g0701,2,wheat,high,rice,medium,claude (true-colour chips and visible RGB only),"not fully blind: NDVI profile seen in review_evidence.png; classic wheat; bare 7 Jun, green 8 Sep"
+g0707,2,wheat,high,fallow,medium,claude (true-colour chips and visible RGB only),classic wheat; bare on 7 Jun and 8 Sep
+g0709,3,wheat,medium,rice,medium,claude (true-colour chips and visible RGB only),small; classic wheat pattern; green 8 Sep
+g0800,3,wheat,medium,rice,low,claude (true-colour chips and visible RGB only),green Jan-Mar (weaker in Mar); weakly green 8 Sep
+g0803,3,wheat,high,rice,medium,claude (true-colour chips and visible RGB only),classic wheat; green 8 Sep
+g0804,3,sugarcane,low,sugarcane,low,claude (true-colour chips and visible RGB only),"not fully blind: NDVI profile seen in review_evidence.png; 9 pixels; dull green/dark all year, green on 7 Jun when others are bare"
+g0805,3,wheat,high,fallow,medium,claude (true-colour chips and visible RGB only),classic wheat; not green on 8 Sep
+g0809,3,wheat,high,rice,medium,claude (true-colour chips and visible RGB only),classic wheat; green 8 Sep
+g0905,3,wheat,high,fallow,low,claude (true-colour chips and visible RGB only),classic wheat; not green on 8 Sep
+g0907,3,wheat,medium,rice,medium,claude (true-colour chips and visible RGB only),small; classic wheat; green 8 Sep

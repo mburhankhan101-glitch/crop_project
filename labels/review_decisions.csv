@@ -1,0 +1,14 @@
+name,role,page,issue,decision,decided_by,notes
+g0000,test,1,"long thin strip along the canal bank: a crop field, or trees/grass on the bank?",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","canal-bank trees: NDVI 0.32-0.62 all year, never harvested; tree line in high-res image"
+g0009,test,1,"thin 0.3-acre strip: a real field, or a path/ridge?",keep,"suggested by Claude from review_evidence.png, approved by Burhan","small real field, several crop cycles a year (0.23 -> 0.81 -> 0.40 -> 0.73)"
+g0202,test,2,still under 0.2 acre: which field is the point in?,non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","point on a road/rail verge: point profile flat 0.23-0.40, differs from the patch beside it"
+g0601,train,5,5.7 acres and ragged: one field or several merged?,keep,"suggested by Claude from review_evidence.png, approved by Burhan","ragged but a clean rice-wheat curve, spread 0.03: several fields with the same history"
+g0701,test,5,2.8 acres and ragged: one field or several merged?,keep,"suggested by Claude from review_evidence.png, approved by Burhan","ragged but a clean rice-wheat curve, spread 0.03"
+g0804,test,6,0.2 acre and ragged: which field is the point in?,keep,"suggested by Claude from review_evidence.png, approved by Burhan","tiny (9 px) but consistent: green most of the year, likely sugarcane or fodder"
+g0908,train,7,"2.7 acres, reached the search limit: one field or several merged?",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan",canal/road embankment with sparse trees: NDVI 0.18-0.38 all year
+g0008,train,1,"never green (village, road or water?): confirm non_crop",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","buildings or bare ground, NDVI 0.13-0.21 all year"
+g0100,train,1,"never green (village, road or water?): confirm non_crop",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","village, NDVI about 0.1 all year"
+g0200,test,2,"never green (village, road or water?): confirm non_crop",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","village, NDVI about 0.1 all year"
+g0304,train,3,"never green (village, road or water?): confirm non_crop",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","village, NDVI about 0.1 all year"
+g0500,train,4,"never green (village, road or water?): confirm non_crop",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","built compound or bare yard, NDVI 0.10-0.23 all year"
+g0507,test,4,"never green (village, road or water?): confirm non_crop",non_crop,"suggested by Claude from review_evidence.png, approved by Burhan","village, NDVI 0.10-0.26 all year"
