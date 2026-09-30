@@ -1,0 +1,301 @@
+field,season,peak_date,peak,start,end,length_days,ndvi_days,note
+g0001,kharif_2025,2025-09-26,0.872,,2025-10-24,,,start not observed
+g0001,rabi_2026,2026-03-05,0.845,,2026-03-30,,,start not observed
+g0001,kharif_2026,2026-06-28,0.917,2026-06-07,,,,end not observed
+g0009,kharif_2025,2025-09-11,0.756,,2025-10-01,,,peak next to a gap or the data edge; start not observed
+g0009,rabi_2026,2026-02-03,0.812,,2026-02-20,,,start not observed
+g0009,kharif_2026,2026-09-11,0.756,,,,,start not observed; end not observed
+g0609,kharif_2025,2025-10-21,0.675,2025-10-06,,,,end not observed
+g0609,rabi_2026,2026-03-10,0.922,,2026-04-07,,,start not observed
+g0609,kharif_2026,2026-09-21,0.482,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0709,kharif_2025,,,,,,,no peak inside this season
+g0709,rabi_2026,2026-03-05,0.859,,2026-04-03,,,start not observed
+g0709,kharif_2026,2026-06-28,0.89,2026-06-13,,,,end not observed
+g0806,kharif_2025,,,,,,,no peak inside this season
+g0806,rabi_2026,2026-03-05,0.9,,2026-04-01,,,start not observed
+g0806,kharif_2026,2026-08-17,0.714,,2026-08-23,,,peak next to a gap or the data edge; start not observed
+g0807,kharif_2025,,,,,,,no peak inside this season
+g0807,rabi_2026,2025-12-05,0.778,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0807,kharif_2026,2026-05-09,0.81,2026-04-18,,,,end not observed
+g0808,kharif_2025,2025-09-11,0.828,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0808,rabi_2026,,,,,,,same crop as kharif_2025 (no clear drop between the peaks)
+g0808,kharif_2026,2026-08-17,0.816,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0809,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0809,rabi_2026,2026-02-13,0.901,2025-12-15,2026-03-28,103.0,77.8,
+g0809,kharif_2026,2026-06-28,0.917,2026-06-12,,,,end not observed
+g0906,kharif_2025,2025-09-11,0.764,,2025-09-21,,,peak next to a gap or the data edge; start not observed
+g0906,rabi_2026,2026-02-13,0.887,,2026-03-27,,,start not observed
+g0906,kharif_2026,2026-06-28,0.849,2026-06-14,,,,end not observed
+g0907,kharif_2025,2025-10-16,0.853,,2025-11-03,,,start not observed
+g0907,rabi_2026,2026-03-05,0.9,,2026-03-30,,,start not observed
+g0907,kharif_2026,2026-07-13,0.674,2026-06-19,,,,peak next to a gap or the data edge; end not observed
+g0000,kharif_2025,2025-10-01,0.786,,2025-10-22,,,start not observed
+g0000,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0000,kharif_2026,2026-06-28,0.813,2026-06-08,,,,end not observed
+g0002,kharif_2025,,,,,,,no peak inside this season
+g0002,rabi_2026,2026-03-05,0.891,,2026-04-08,,,start not observed
+g0002,kharif_2026,2026-08-17,0.761,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0003,kharif_2025,2025-09-11,0.626,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0003,rabi_2026,,,,,,,same crop as kharif_2025 (no clear drop between the peaks)
+g0003,kharif_2026,2026-09-06,0.705,,,,,start not observed; end not observed
+g0004,kharif_2025,,,,,,,no peak inside this season
+g0004,rabi_2026,2025-11-25,0.795,2025-10-15,,,,end not observed
+g0004,kharif_2026,2026-08-17,0.854,,2026-08-27,,,peak next to a gap or the data edge; start not observed
+g0005,kharif_2025,2025-09-11,0.29,,2025-09-17,,,peak next to a gap or the data edge; start not observed
+g0005,rabi_2026,2026-02-18,0.353,,2026-04-12,,,start not observed
+g0005,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0006,kharif_2025,2025-09-11,0.754,,2025-09-19,,,peak next to a gap or the data edge; start not observed
+g0006,rabi_2026,2026-03-25,0.899,,2026-04-08,,,start not observed
+g0006,kharif_2026,2026-08-17,0.843,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0007,kharif_2025,2025-09-21,0.589,,2025-10-04,,,start not observed
+g0007,rabi_2026,2026-03-05,0.897,,2026-03-31,,,start not observed
+g0007,kharif_2026,2026-07-08,0.616,2026-06-21,,,,end not observed
+g0008,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0008,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0008,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0100,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0100,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0100,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0102,kharif_2025,,,,,,,no peak inside this season
+g0102,rabi_2026,2026-03-05,0.869,,2026-04-01,,,start not observed
+g0102,kharif_2026,2026-07-08,0.589,2026-06-16,,,,end not observed
+g0103,kharif_2025,2025-09-11,0.376,,2025-09-17,,,peak next to a gap or the data edge; start not observed
+g0103,rabi_2026,2026-03-25,0.841,,2026-05-06,,,start not observed
+g0103,kharif_2026,2026-09-06,0.762,,,,,start not observed; end not observed
+g0104,kharif_2025,2025-09-21,0.334,,2025-09-25,,,start not observed
+g0104,rabi_2026,2026-02-03,0.774,,2026-03-02,,,start not observed
+g0104,kharif_2026,2026-05-29,0.868,2026-05-13,,,,end not observed
+g0105,kharif_2025,2025-10-01,0.914,,,,,start not observed; end not observed
+g0105,rabi_2026,2026-03-10,0.843,,2026-04-09,,,start not observed
+g0105,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0106,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0106,rabi_2026,2026-02-03,0.875,,2026-03-28,,,start not observed
+g0106,kharif_2026,2026-08-17,0.811,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0107,kharif_2025,2025-09-16,0.345,,2025-09-21,,,start not observed
+g0107,rabi_2026,2026-03-10,0.843,,2026-03-30,,,start not observed
+g0107,kharif_2026,2026-08-17,0.776,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0108,kharif_2025,2025-09-11,0.867,,2025-09-19,,,peak next to a gap or the data edge; start not observed
+g0108,rabi_2026,2026-03-25,0.902,,,,,start not observed; end not observed
+g0108,kharif_2026,2026-08-17,0.858,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0109,kharif_2025,2025-09-16,0.43,,2025-09-20,,,start not observed
+g0109,rabi_2026,2026-03-10,0.881,,,,,start not observed; end not observed
+g0109,kharif_2026,2026-09-21,0.742,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0200,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0200,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0200,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0201,kharif_2025,2025-09-11,0.809,,2025-10-20,,,peak next to a gap or the data edge; start not observed
+g0201,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0201,kharif_2026,2026-09-16,0.803,,,,,start not observed; end not observed
+g0202,kharif_2025,2025-09-26,0.693,,2025-10-21,,,start not observed
+g0202,rabi_2026,2026-03-25,0.631,,,,,start not observed; end not observed
+g0202,kharif_2026,2026-09-11,0.589,,,,,start not observed; end not observed
+g0203,kharif_2025,2025-09-26,0.669,,2025-10-12,,,start not observed
+g0203,rabi_2026,2026-03-05,0.868,,,,,start not observed; end not observed
+g0203,kharif_2026,2026-08-17,0.589,,2026-08-20,,,peak next to a gap or the data edge; start not observed
+g0204,kharif_2025,2025-10-16,0.829,,,,,start not observed; end not observed
+g0204,rabi_2026,2026-03-05,0.858,,2026-04-01,,,start not observed
+g0204,kharif_2026,2026-06-28,0.802,2026-06-10,,,,end not observed
+g0205,kharif_2025,2025-09-11,0.388,,2025-09-20,,,peak next to a gap or the data edge; start not observed
+g0205,rabi_2026,2026-03-25,0.893,,2026-05-18,,,start not observed
+g0205,kharif_2026,2026-08-17,0.777,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0207,kharif_2025,,,,,,,same crop as rabi_2026 (no clear drop between the peaks)
+g0207,rabi_2026,2026-02-03,0.738,,,,,start not observed; end not observed
+g0207,kharif_2026,2026-08-17,0.47,,2026-08-20,,,peak next to a gap or the data edge; start not observed
+g0208,kharif_2025,2025-09-11,0.487,,2025-09-19,,,peak next to a gap or the data edge; start not observed
+g0208,rabi_2026,2026-02-03,0.831,,2026-03-24,,,start not observed
+g0208,kharif_2026,2026-06-28,0.698,2026-06-14,,,,end not observed
+g0209,kharif_2025,2025-09-21,0.588,,2025-10-02,,,start not observed
+g0209,rabi_2026,2026-03-05,0.764,,2026-03-29,,,start not observed
+g0209,kharif_2026,2026-07-08,0.703,2026-06-17,,,,end not observed
+g0300,kharif_2025,2025-09-26,0.778,,2025-11-06,,,start not observed
+g0300,rabi_2026,2026-03-05,0.811,,2026-03-28,,,start not observed
+g0300,kharif_2026,2026-09-16,0.833,,,,,start not observed; end not observed
+g0301,kharif_2025,,,,,,,no peak inside this season
+g0301,rabi_2026,2026-02-03,0.796,,2026-03-09,,,start not observed
+g0301,kharif_2026,2026-08-17,0.738,,2026-08-26,,,peak next to a gap or the data edge; start not observed
+g0302,kharif_2025,2025-09-11,0.772,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0302,rabi_2026,,,,,,,same crop as kharif_2025 (no clear drop between the peaks)
+g0302,kharif_2026,2026-08-17,0.767,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0303,kharif_2025,2025-09-26,0.858,,2025-10-18,,,start not observed
+g0303,rabi_2026,2026-03-05,0.866,,2026-03-15,,,start not observed
+g0303,kharif_2026,2026-09-11,0.822,,,,,start not observed; end not observed
+g0304,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0304,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0304,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0305,kharif_2025,2025-09-11,0.554,,2025-09-29,,,peak next to a gap or the data edge; start not observed
+g0305,rabi_2026,2026-02-03,0.822,,2026-03-25,,,start not observed
+g0305,kharif_2026,2026-09-16,0.848,,,,,start not observed; end not observed
+g0306,kharif_2025,2025-10-11,0.85,,,,,start not observed; end not observed
+g0306,rabi_2026,2026-04-04,0.839,,2026-05-17,,,start not observed
+g0306,kharif_2026,2026-08-17,0.792,,2026-08-28,,,peak next to a gap or the data edge; start not observed
+g0308,kharif_2025,2025-09-11,0.871,,2025-10-12,,,peak next to a gap or the data edge; start not observed
+g0308,rabi_2026,2026-02-08,0.84,,2026-03-25,,,start not observed
+g0308,kharif_2026,2026-09-16,0.818,,,,,start not observed; end not observed
+g0400,kharif_2025,2025-09-26,0.48,,2025-10-12,,,start not observed
+g0400,rabi_2026,2026-02-13,0.855,,2026-03-25,,,start not observed
+g0400,kharif_2026,2026-09-16,0.67,,,,,start not observed; end not observed
+g0401,kharif_2025,2025-09-11,0.394,,2025-09-17,,,peak next to a gap or the data edge; start not observed
+g0401,rabi_2026,2026-04-09,0.705,,2026-05-23,,,start not observed
+g0401,kharif_2026,2026-08-17,0.778,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0402,kharif_2025,2025-09-11,0.541,,2025-10-06,,,peak next to a gap or the data edge; start not observed
+g0402,rabi_2026,2026-02-13,0.865,,2026-03-25,,,start not observed
+g0402,kharif_2026,2026-09-16,0.729,,,,,start not observed; end not observed
+g0403,kharif_2025,2025-09-26,0.355,,2025-10-08,,,start not observed
+g0403,rabi_2026,2026-02-13,0.838,,2026-03-27,,,start not observed
+g0403,kharif_2026,2026-06-28,0.844,2026-06-04,,,,end not observed
+g0404,kharif_2025,2025-09-11,0.492,,2025-09-14,,,peak next to a gap or the data edge; start not observed
+g0404,rabi_2026,2026-03-10,0.842,,2026-03-31,,,start not observed
+g0404,kharif_2026,2026-08-17,0.62,,2026-08-20,,,peak next to a gap or the data edge; start not observed
+g0405,kharif_2025,2025-10-11,0.837,,,,,start not observed; end not observed
+g0405,rabi_2026,2026-04-04,0.893,,2026-05-19,,,start not observed
+g0405,kharif_2026,2026-08-17,0.885,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0406,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0406,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0406,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0407,kharif_2025,,,,,,,same crop as rabi_2026 (no clear drop between the peaks)
+g0407,rabi_2026,2026-02-13,0.76,,2026-04-04,,,start not observed
+g0407,kharif_2026,2026-09-11,0.502,,,,,start not observed; end not observed
+g0408,kharif_2025,2025-09-26,0.838,,2025-10-24,,,start not observed
+g0408,rabi_2026,2026-03-05,0.9,,2026-03-17,,,start not observed
+g0408,kharif_2026,2026-08-17,0.74,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0409,kharif_2025,,,,,,,no peak inside this season
+g0409,rabi_2026,2026-03-05,0.908,,2026-03-16,,,start not observed
+g0409,kharif_2026,2026-06-03,0.965,2026-05-08,2026-06-15,38.0,26.9,
+g0500,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0500,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0500,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0501,kharif_2025,,,,,,,no peak inside this season
+g0501,rabi_2026,2026-02-18,0.87,,2026-04-06,,,start not observed
+g0501,kharif_2026,2026-06-28,0.742,2026-06-05,,,,end not observed
+g0502,kharif_2025,2025-09-11,0.9,,2025-10-15,,,peak next to a gap or the data edge; start not observed
+g0502,rabi_2026,2026-02-13,0.878,,2026-03-30,,,start not observed
+g0502,kharif_2026,2026-09-16,0.883,,,,,start not observed; end not observed
+g0503,kharif_2025,2025-09-11,0.759,,2025-10-15,,,peak next to a gap or the data edge; start not observed
+g0503,rabi_2026,2026-02-13,0.857,,2026-03-30,,,start not observed
+g0503,kharif_2026,2026-09-11,0.784,,,,,start not observed; end not observed
+g0504,kharif_2025,2025-09-11,0.514,,2025-09-17,,,peak next to a gap or the data edge; start not observed
+g0504,rabi_2026,2026-03-05,0.791,,2026-03-29,,,start not observed
+g0504,kharif_2026,2026-09-21,0.737,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0505,kharif_2025,2025-09-11,0.895,,2025-10-07,,,peak next to a gap or the data edge; start not observed
+g0505,rabi_2026,2026-02-13,0.909,,2026-03-28,,,start not observed
+g0505,kharif_2026,2026-09-11,0.875,,,,,start not observed; end not observed
+g0506,kharif_2025,2025-09-21,0.685,,2025-09-29,,,start not observed
+g0506,rabi_2026,2026-03-25,0.743,,2026-04-23,,,start not observed
+g0506,kharif_2026,2026-08-17,0.615,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0507,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0507,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0507,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0600,kharif_2025,2025-09-11,0.868,,2025-10-03,,,peak next to a gap or the data edge; start not observed
+g0600,rabi_2026,2025-12-05,0.866,2025-11-17,,,,peak next to a gap or the data edge; end not observed
+g0600,kharif_2026,2026-08-17,0.882,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0601,kharif_2025,2025-09-21,0.372,,2025-11-11,,,start not observed
+g0601,rabi_2026,2026-03-05,0.85,,2026-04-02,,,start not observed
+g0601,kharif_2026,2026-09-11,0.838,,,,,start not observed; end not observed
+g0602,kharif_2025,2025-09-11,0.882,,2025-10-16,,,peak next to a gap or the data edge; start not observed
+g0602,rabi_2026,2026-02-13,0.872,,2026-03-24,,,start not observed
+g0602,kharif_2026,2026-09-16,0.865,,,,,start not observed; end not observed
+g0603,kharif_2025,2025-09-26,0.723,,2025-10-25,,,start not observed
+g0603,rabi_2026,2026-03-05,0.805,,2026-03-31,,,start not observed
+g0603,kharif_2026,2026-08-17,0.803,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0604,kharif_2025,,,,,,,no peak inside this season
+g0604,rabi_2026,2026-04-04,0.858,2026-03-16,2026-05-22,66.0,45.9,
+g0604,kharif_2026,,,,,,,same crop as rabi_2026 (no clear drop between the peaks)
+g0605,kharif_2025,2025-09-11,0.855,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0605,rabi_2026,,,,,,,same crop as kharif_2025 (no clear drop between the peaks)
+g0605,kharif_2026,2026-08-17,0.789,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0606,kharif_2025,2025-09-11,0.711,,2025-10-04,,,peak next to a gap or the data edge; start not observed
+g0606,rabi_2026,2026-02-13,0.877,,2026-03-28,,,start not observed
+g0606,kharif_2026,2026-08-17,0.436,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0607,kharif_2025,2025-09-11,0.773,,2025-09-15,,,peak next to a gap or the data edge; start not observed
+g0607,rabi_2026,2026-03-05,0.877,,,,,start not observed; end not observed
+g0607,kharif_2026,,,,,,,no peak inside this season
+g0608,kharif_2025,2025-10-16,0.678,2025-10-05,,,,end not observed
+g0608,rabi_2026,2026-02-13,0.84,,2026-02-26,,,start not observed
+g0608,kharif_2026,2026-09-16,0.808,,,,,start not observed; end not observed
+g0700,kharif_2025,2025-09-11,0.846,,2025-10-13,,,peak next to a gap or the data edge; start not observed
+g0700,rabi_2026,2026-03-05,0.808,,,,,start not observed; end not observed
+g0700,kharif_2026,2026-06-28,0.818,2026-06-03,,,,end not observed
+g0701,kharif_2025,2025-09-11,0.913,,2025-10-07,,,peak next to a gap or the data edge; start not observed
+g0701,rabi_2026,2026-03-05,0.885,,2026-03-30,,,start not observed
+g0701,kharif_2026,2026-09-16,0.822,,,,,start not observed; end not observed
+g0702,kharif_2025,2025-10-16,0.686,,,,,start not observed; end not observed
+g0702,rabi_2026,2026-03-05,0.81,,2026-04-01,,,start not observed
+g0702,kharif_2026,2026-09-21,0.763,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0703,kharif_2025,2025-09-11,0.866,,2025-10-23,,,peak next to a gap or the data edge; start not observed
+g0703,rabi_2026,2026-03-05,0.886,,2026-03-30,,,start not observed
+g0703,kharif_2026,2026-08-17,0.851,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0704,kharif_2025,,,,,,,no peak inside this season
+g0704,rabi_2026,2026-03-10,0.903,,2026-04-08,,,start not observed
+g0704,kharif_2026,2026-08-17,0.74,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0705,kharif_2025,2025-09-11,0.863,,2025-10-28,,,peak next to a gap or the data edge; start not observed
+g0705,rabi_2026,2026-03-05,0.895,,2026-03-30,,,start not observed
+g0705,kharif_2026,2026-08-17,0.825,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0707,kharif_2025,,,,,,,no peak inside this season
+g0707,rabi_2026,2026-03-10,0.892,,2026-04-03,,,start not observed
+g0707,kharif_2026,2026-08-17,0.747,,2026-08-20,,,peak next to a gap or the data edge; start not observed
+g0708,kharif_2025,2025-10-01,0.714,,2025-10-11,,,start not observed
+g0708,rabi_2026,2026-02-13,0.83,,2026-03-22,,,start not observed
+g0708,kharif_2026,2026-06-28,0.88,2026-06-06,,,,end not observed
+g0801,kharif_2025,2025-09-11,0.885,,2025-10-12,,,peak next to a gap or the data edge; start not observed
+g0801,rabi_2026,2026-03-25,0.901,,,,,start not observed; end not observed
+g0801,kharif_2026,2026-09-21,0.878,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0805,kharif_2025,,,,,,,no peak inside this season
+g0805,rabi_2026,2026-03-10,0.889,,2026-04-02,,,start not observed
+g0805,kharif_2026,2026-09-21,0.718,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0900,kharif_2025,2025-09-11,0.727,,2025-09-28,,,peak next to a gap or the data edge; start not observed
+g0900,rabi_2026,2026-02-13,0.704,,2026-03-16,,,start not observed
+g0900,kharif_2026,2026-06-03,0.828,2026-05-15,,,,end not observed
+g0901,kharif_2025,2025-09-11,0.625,,2025-10-23,,,peak next to a gap or the data edge; start not observed
+g0901,rabi_2026,2026-03-05,0.821,,2026-03-26,,,start not observed
+g0901,kharif_2026,2026-09-21,0.658,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0902,kharif_2025,2025-09-11,0.614,,2025-09-23,,,peak next to a gap or the data edge; start not observed
+g0902,rabi_2026,2026-02-13,0.792,,2026-03-16,,,start not observed
+g0902,kharif_2026,2026-08-22,0.664,,,,,start not observed; end not observed
+g0903,kharif_2025,2025-10-06,0.703,,2025-10-22,,,start not observed
+g0903,rabi_2026,2026-02-13,0.89,,2026-03-29,,,start not observed
+g0903,kharif_2026,2026-09-11,0.804,,,,,start not observed; end not observed
+g0905,kharif_2025,2025-09-11,0.746,,2025-10-10,,,peak next to a gap or the data edge; start not observed
+g0905,rabi_2026,2026-03-05,0.865,,2026-03-28,,,start not observed
+g0905,kharif_2026,2026-08-17,0.604,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0909,kharif_2025,2025-09-26,0.861,,2025-10-24,,,start not observed
+g0909,rabi_2026,2026-01-24,0.851,,2026-02-17,,,peak next to a gap or the data edge; start not observed
+g0909,kharif_2026,2026-05-29,0.794,2026-05-06,2026-06-03,29.0,16.9,
+g0101,kharif_2025,,,,,,,no peak inside this season
+g0101,rabi_2026,2026-03-10,0.913,,2026-05-29,,,start not observed
+g0101,kharif_2026,,,,,,,no peak inside this season
+g0309,kharif_2025,2025-09-26,0.854,,2025-10-14,,,start not observed
+g0309,rabi_2026,2026-03-10,0.88,,2026-04-11,,,start not observed
+g0309,kharif_2026,2026-06-03,0.95,2026-05-13,2026-06-09,27.0,18.1,
+g0509,kharif_2025,,,,,,,no peak inside this season
+g0509,rabi_2026,2026-03-05,0.915,,2026-04-07,,,start not observed
+g0509,kharif_2026,2026-06-28,0.92,2026-06-16,,,,end not observed
+g0800,kharif_2025,2025-09-21,0.687,,2025-10-13,,,peak next to a gap or the data edge; start not observed
+g0800,rabi_2026,2026-03-05,0.79,,2026-03-29,,,start not observed
+g0800,kharif_2026,2026-09-21,0.735,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0803,kharif_2025,2025-09-21,0.384,,2025-09-24,,,peak next to a gap or the data edge; start not observed
+g0803,rabi_2026,2026-02-13,0.781,,2026-03-26,,,start not observed
+g0803,kharif_2026,2026-06-28,0.971,2026-06-04,,,,end not observed
+g0804,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0804,rabi_2026,2026-03-20,0.793,,2026-04-11,,,start not observed
+g0804,kharif_2026,2026-08-17,0.801,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0206,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0206,rabi_2026,2026-03-10,0.91,,,,,start not observed; end not observed
+g0206,kharif_2026,2026-06-28,0.925,2026-06-07,,,,end not observed
+g0307,kharif_2025,,,,,,,no peak inside this season
+g0307,rabi_2026,2025-11-30,0.859,2025-10-13,,,,end not observed
+g0307,kharif_2026,2026-08-17,0.799,,2026-08-28,,,peak next to a gap or the data edge; start not observed
+g0508,kharif_2025,2025-09-26,0.821,,,,,start not observed; end not observed
+g0508,rabi_2026,,,,,,,no peak inside this season
+g0508,kharif_2026,2026-05-09,0.773,2026-03-12,,,,end not observed
+g0706,kharif_2025,2025-10-01,0.887,,2025-10-25,,,start not observed
+g0706,rabi_2026,2026-02-13,0.867,,2026-03-29,,,start not observed
+g0706,kharif_2026,2026-09-11,0.83,,,,,start not observed; end not observed
+g0802,kharif_2025,2025-09-21,0.447,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0802,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0802,kharif_2026,2026-08-17,0.607,,,,,peak next to a gap or the data edge; start not observed; end not observed
+g0904,kharif_2025,2025-09-21,0.654,,2025-10-13,,,peak next to a gap or the data edge; start not observed
+g0904,rabi_2026,2026-02-13,0.838,,,,,start not observed; end not observed
+g0904,kharif_2026,2026-09-16,0.836,,,,,start not observed; end not observed
+g0908,kharif_2025,,,,,,,NDVI rises less than 0.2: no clear crop
+g0908,rabi_2026,,,,,,,NDVI rises less than 0.2: no clear crop
+g0908,kharif_2026,,,,,,,NDVI rises less than 0.2: no clear crop

@@ -328,7 +328,8 @@ def main():
     window = args.window if args.window else min(mae, key=mae.get)
     print(f"  -> using {'no smoothing' if window is None else f'window {window}'}"
           + (" (set with --window)" if args.window else " (lowest error)"))
-    worst = sorted(errors[window], key=lambda e: -e[2])[:5]
+    unique = {(f, d): e for f, d, e in errors[window]}  # the same point is often hidden in several repeats
+    worst = sorted(((f, d, e) for (f, d), e in unique.items()), key=lambda x: -x[2])[:5]
     print("  largest errors: " + ", ".join(
         f"{f.split('_')[-1]} {(grid[0] + timedelta(days=d)):%d %b} {e:.2f}" for f, d, e in worst))
 
@@ -368,7 +369,10 @@ def main():
         else:
             print(f"  {p['field']:18} {p['season']:12} {p['note']}")
 
-    plot(results, obs_all, grid, pheno, args, window, mae, os.path.join(args.out, "series.png"))
+    if len(names) <= 12:
+        plot(results, obs_all, grid, pheno, args, window, mae, os.path.join(args.out, "series.png"))
+    else:
+        print(f"\n{len(names)} fields: series.png skipped (one panel per field would be unreadable)")
     print(f"\nMatrix: {len(names)} fields x {matrix.shape[1]} columns ({len(indices)} indices x {len(grid)} dates)")
     print(f"Saved series.csv, series_matrix.csv, phenology.csv and series.png in ./{args.out}/")
 

@@ -6,3 +6,4 @@ planetary-computer
 geopandas
 pandas
 scipy
+scikit-learn

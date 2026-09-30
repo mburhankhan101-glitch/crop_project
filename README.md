@@ -118,14 +118,16 @@ hollow points on the chart):
 | Check | Rule | Catches |
 |---|---|---|
 | Cloud edges | grow SCL cloud and shadow by 2 pixels (`--cloud-buffer`) | the fringe around clouds |
-| `haze` | field median of blue − red above 0.008 (`--haze`) | haze and smog, which brighten blue more than red |
+| `haze` | the date's scene is hazy: the median blue − red of its dense-crop fields (NDVI > 0.5) is above 0.006 (`--haze`); every field on that date is flagged | haze and smog, which brighten blue more than red, including over bare fields where the test itself can't see it |
 | `dip` | NDVI more than 0.1 below both neighbouring dates, each within 20 days (`--dip`, `--dip-days`) | any short dip that recovers; a harvest doesn't recover, so it isn't flagged |
-| `scene_haze` | another field was flagged `haze` on the same date | haze over bare or sparse fields, where soil keeps blue − red too low for the haze test |
 
-The haze threshold was calibrated on these fields: clear dense wheat sits near blue − red = 0,
-the hazy days at +0.010 to +0.023. The scene's own aerosol estimate (the AOT band) turned out
-useless for this: it was normal on the haziest day, because haze it had estimated correctly
-would already have been removed.
+Haze is judged per scene, not per field. The first version flagged any single field above
+0.008 and spread that to its neighbours; calibrated on 3 fields, it held up there, but across
+100 fields some healthy dense wheat sits naturally at +0.009 and one false alarm spread over
+kilometres (a clear 21 January was flagged for 87% of fields). The median over many dense
+fields separates cleanly: known hazy dates +0.011 to +0.022, known clear dates +0.002 or lower.
+The scene's own aerosol estimate (the AOT band) turned out useless for this: it was normal on
+the haziest day, because haze it had estimated correctly would already have been removed.
 
 `fields_flagged.png` shows every flagged date in true colour next to the clearest date, so
 each flag can be checked by eye:
@@ -168,6 +170,54 @@ peak 0.86 on 5 Mar); `field1_southeast`'s short winter crop from 31 Dec to 10 Fe
 Downloaded pixel windows are cached in `cache/` (about 3 MB for a year), keyed by scene, band and
 window, so re-running `s2_fields.py` takes about 10 seconds instead of one to four minutes.
 
+## Labelled dataset: 100 fields near Raiwind
+
+The first machine-learning step needs labelled fields. `labels/fields.geojson` holds 100 of
+them, sampled, outlined and labelled per season (Rabi and Kharif 2026), each label with its
+source and confidence. The rules are in [LABELS.md](LABELS.md); the full decision log, with
+the reasons and the mistakes caught, is in the Step 7 summary page.
+
+```powershell
+python s2_sample.py                                     # 1. one random point per km² in 10 x 10 km
+python s2_delineate.py --calibrate fields.geojson       # 2. check the boundary threshold on known fields
+python s2_delineate.py                                  #    grow a field outline at every point
+python s2_label_sheets.py --blind                       # 3. true-colour sheets for the 30 test fields
+python s2_review.py                                     # 4. apply review + blind labels -> labels/fields.geojson
+python s2_fields.py --fields labels/fields.geojson --buffer 5 --out output/labels   # 5. series
+python s2_series.py --csv output/labels/fields.csv --out output/labels
+python s2_cluster.py                                    # 6. k-means on the 70 training fields
+python s2_review.py                                     # 7. merge labels/train_labels.csv as well
+```
+
+- **Sampling:** one random point per 1 km cell, so nobody chooses the easy fields; 2 km strips
+  are the spatial cross-validation blocks, and 6 points per strip are the blind test set.
+- **Boundaries:** grown from each point over pixels whose monthly NDVI through the whole year
+  matches the point's, so neighbouring fields that only differ in one season stay apart.
+  Threshold 0.08, calibrated by overlap (IoU) with known fields; ragged results are retried
+  stricter; points on ridges and paths join the field they touch. 13 flagged outlines were
+  reviewed against sub-metre imagery and NDVI: 4 kept, 9 non_crop, none dropped.
+- **Test labels (30):** labelled blind, from true-colour chips and visible RGB only, never NDVI,
+  so they stay independent of what the model learns from. They were labelled by Claude at the
+  author's request, and recorded as such.
+- **Training labels (65):** k-means (k = 6) on the training fields' NDVI years, with the test
+  fields left out so their labels can't leak in; each cluster named from its curve, and the
+  13 fields that fit their cluster poorly read one by one. Source `curve`.
+
+![k-means clusters of the training fields](output/labels/clusters.png)
+
+| Rabi 2026 | Train | Test |
+|---|---|---|
+| wheat | 44 | 17 |
+| other_winter | 9 | 3 |
+| non_crop | 6 | 5 |
+| short_winter | 6 | 0 |
+| unknown | 2 | 3 |
+| fallow / sugarcane / orchard | 1 / 1 / 1 | 1 / 1 / 0 |
+
+Fields here are small (median about 1 acre; 61 have fewer than 10 pure 20 m pixels), so the
+traced outlines are shrunk by 5 m, half a pixel, rather than 10 m. Rare classes will need
+merging before training, and most labels are a model's reading rather than a farmer's answer.
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -193,7 +243,7 @@ Each step adds a feature and teaches one concept.
 - [x] Local cache + gap-filled, smoothed 5-day time series
 
 **Machine learning (CS229)**
-- [ ] Labelled dataset of 60–100 fields by crop system
+- [x] Labelled dataset of 60–100 fields by crop system
 - [ ] Crop classification: logistic regression, SVM, gradient-boosted trees, with spatial cross-validation
 - [ ] Write-up
 

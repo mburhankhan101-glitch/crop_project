@@ -7,7 +7,8 @@ entirely inside it count, and tracks every index in s2_indices.INDICES field by 
 The SCL cloud mask misses cloud edges and haze, so each observation is also checked and
 flagged (not dropped):
     cloud edges  SCL cloud and shadow pixels are grown by --cloud-buffer pixels first
-    haze         median blue minus red above --haze; haze brightens blue more than red
+    haze         a hazy scene: the median blue minus red of the date's dense-crop fields is above
+                 --haze (haze brightens blue more than red); every field on that date is flagged
     dip          NDVI more than --dip below the observations before and after it, both within
                  --dip-days; crops don't lose that much greenness and regrow within days
 
@@ -31,6 +32,7 @@ import math
 import os
 import threading
 import time
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 
@@ -59,6 +61,9 @@ GRID_M = 20
 TWENTY_M_BANDS = {"B05", "B06", "B07", "B8A", "B11", "B12"}
 COLORS = plt.cm.tab10.colors
 
+MAX_PLOTTED = 12  # above this many fields, per-field charts and galleries are skipped
+DENSE_NDVI = 0.5  # the haze test only uses fields at least this green
+
 # Pixel windows already downloaded are kept here; None switches caching off (--no-cache).
 CACHE_DIR = "cache"
 
@@ -80,9 +85,9 @@ def parse_args():
     p.add_argument("--min-clear", type=float, default=0.8, help="fraction of a field that must be cloud-free")
     p.add_argument("--cloud-buffer", type=int, default=2,
                    help="grow SCL cloud and shadow by this many 10 m pixels (default 2)")
-    p.add_argument("--haze", type=float, default=0.008,
-                   help="flag haze when a field's median blue minus red exceeds this (default 0.008, "
-                        "calibrated on the fields near Raiwind)")
+    p.add_argument("--haze", type=float, default=0.006,
+                   help="flag a date as hazy when the median blue minus red of its dense-crop fields exceeds "
+                        "this (default 0.006, calibrated on 100 fields near Raiwind)")
     p.add_argument("--dip", type=float, default=0.1, help="flag an NDVI dip this far below both neighbours")
     p.add_argument("--dip-days", type=int, default=20, help="neighbours must be within this many days")
     p.add_argument("--out", default="output", help="output folder")
@@ -157,48 +162,99 @@ def read_bounds(item, bounds, bands):
     or None if the area runs off the edge of this tile. Windows are cached on disk
     unless CACHE_DIR is None.
     """
-    transform, shape = snapped_grid(bounds, PIXEL_M)
-    x0, y1 = transform.c, transform.f
-    x1, y0 = x0 + shape[1] * PIXEL_M, y1 - shape[0] * PIXEL_M
+    return read_windows(item, [bounds], bands)[0]
 
-    out = {}
+
+def read_windows(item, bounds_list, bands):
+    """read_bounds for several windows of one scene, opening each band's file only once.
+
+    With many small windows (fields spread over 10 km), the time goes on network round trips,
+    not bytes: one open per band lets GDAL reuse the blocks it has already fetched for
+    neighbouring windows. Returns a list with (arrays, transform) or None per window.
+    """
+    grids = []
+    for bounds in bounds_list:
+        transform, shape = snapped_grid(bounds, PIXEL_M)
+        x0, y1 = transform.c, transform.f
+        grids.append((transform, shape, (x0, y1 - shape[0] * PIXEL_M, x0 + shape[1] * PIXEL_M, y1)))
+    out = [{} for _ in bounds_list]
+    off_tile = [False] * len(bounds_list)
+
     for band in bands:
-        path = cache_path(item, band, x0, y0, x1, y1) if CACHE_DIR else None
-        if path and os.path.exists(path):
-            out[band] = np.load(path)
+        paths = [cache_path(item, band, *box_) if CACHE_DIR else None for _, _, box_ in grids]
+        todo = []
+        for k, path in enumerate(paths):
+            if off_tile[k]:
+                continue
+            if path and os.path.exists(path):
+                out[k][band] = np.load(path)
+            else:
+                todo.append(k)
+        if not todo:
             continue
         with rasterio.open(item.assets[band].href) as src:
-            win = from_bounds(x0, y0, x1, y1, src.transform).round_offsets().round_lengths()
-            inside = (win.col_off >= 0 and win.row_off >= 0
-                      and win.col_off + win.width <= src.width and win.row_off + win.height <= src.height)
-            if not inside:
-                return None
-            out[band] = src.read(1, window=win, out_shape=shape, resampling=Resampling.nearest)
-        if path:
-            # Write to a temporary name first so a crash or a parallel thread never leaves half a file.
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            tmp = f"{path}.{threading.get_ident()}.tmp"
-            with open(tmp, "wb") as f:
-                np.save(f, out[band])
-            os.replace(tmp, path)
-    return out, transform
+            for k in todo:
+                transform, shape, (x0, y0, x1, y1) = grids[k]
+                win = from_bounds(x0, y0, x1, y1, src.transform).round_offsets().round_lengths()
+                inside = (win.col_off >= 0 and win.row_off >= 0
+                          and win.col_off + win.width <= src.width and win.row_off + win.height <= src.height)
+                if not inside:
+                    off_tile[k] = True
+                    continue
+                out[k][band] = src.read(1, window=win, out_shape=shape, resampling=Resampling.nearest)
+                if paths[k]:
+                    # Write to a temporary name first so a crash or a parallel thread never leaves half a file.
+                    os.makedirs(os.path.dirname(paths[k]), exist_ok=True)
+                    tmp = f"{paths[k]}.{threading.get_ident()}.tmp"
+                    with open(tmp, "wb") as f:
+                        np.save(f, out[k][band])
+                    os.replace(tmp, paths[k])
+    return [None if off_tile[k] else (out[k], grids[k][0]) for k in range(len(bounds_list))]
+
+
+def group_nearby(geoms, gap_m):
+    """Indices of non-empty geometries, grouped so that fields within gap_m of each other share a group."""
+    idx = [i for i, g in enumerate(geoms) if not g.is_empty]
+    parent = {i: i for i in idx}
+
+    def root(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for a, i in enumerate(idx):
+        for j in idx[a + 1:]:
+            if geoms[i].distance(geoms[j]) <= gap_m:
+                parent[root(i)] = root(j)
+    groups = {}
+    for i in idx:
+        groups.setdefault(root(i), []).append(i)
+    return list(groups.values())
 
 
 def field_masks(fields, crs, args):
-    """Where the (shrunk) fields sit on the reading grid, in one tile coordinate system.
+    """Reading windows and field masks, in one tile coordinate system.
 
-    Every scene in that coordinate system is read over the same window, so the masks are
-    computed once, here, rather than per scene. (rasterio's rasterize isn't safe to call
-    from several threads at once; it can occasionally return an empty mask.)
+    Nearby fields share a window; fields far apart get their own, so a sample spread over
+    10 km reads 100 small windows rather than the whole area. Every scene in a coordinate
+    system uses the same windows, so the masks are computed once, here, rather than per scene.
+    (rasterio's rasterize isn't safe to call from several threads at once; it can
+    occasionally return an empty mask.)
+
+    Returns a list of (bounds, {field index: mask}).
     """
     inner = fields.to_crs(crs).geometry.buffer(-args.buffer)
     # Read a margin around the fields so clouds just outside them can be grown inwards.
     margin = args.cloud_buffer * PIXEL_M
-    bounds = inner[~inner.is_empty].total_bounds + np.array([-margin, -margin, margin, margin])
-    transform, shape = snapped_grid(bounds, PIXEL_M)
-    masks = [None if g.is_empty else geometry_mask([g], out_shape=shape, transform=transform, invert=True)
-             for g in inner]
-    return bounds, masks
+    windows = []
+    for members in group_nearby(list(inner), gap_m=200):
+        bounds = np.array(gpd.GeoSeries(inner.iloc[members]).total_bounds) + np.array([-margin, -margin, margin, margin])
+        transform, shape = snapped_grid(bounds, PIXEL_M)
+        masks = {i: geometry_mask([inner.iloc[i]], out_shape=shape, transform=transform, invert=True)
+                 for i in members}
+        windows.append((bounds, masks))
+    return windows
 
 
 def grow(mask, pixels):
@@ -212,29 +268,34 @@ def grow(mask, pixels):
 def scene_fields(item, names, layouts, args):
     """One row per field that is clear enough on this date."""
     bands = sorted(set(bands_for(args.indices)) | HAZE_BANDS)
-    bounds, masks = layouts[item_crs(item)]
+    windows = layouts[item_crs(item)]
     try:
-        read = read_bounds(item, bounds, bands + ["SCL"])
+        reads = read_windows(item, [bounds for bounds, _ in windows], bands + ["SCL"])
     except rasterio.errors.RasterioIOError as e:
         print(f"  {item.datetime.date()}: could not read ({e})")
         return []
-    if read is None:
-        return []
-    arrays, _ = read
+    rows = []
+    for (_, masks), read in zip(windows, reads):
+        if read is not None:
+            rows += window_rows(item, read[0], masks, names, bands, args)
+    return rows
 
+
+def window_rows(item, arrays, masks, names, bands, args):
+    """Statistics for each field inside one reading window."""
     # SCL often misses the thin fringe around clouds and shadows, so grow them first.
     cloud = grow(np.isin(arrays["SCL"], CLOUD_SCL), args.cloud_buffer)
     valid = np.isin(arrays["SCL"], CLEAR_SCL) & ~cloud
     for band in bands:
         valid &= arrays[band] > 0
     refl = {band: reflectance(arrays[band], item) for band in bands}
-    values = {name: INDICES[name]["formula"](refl) for name in args.indices}
+    with np.errstate(divide="ignore", invalid="ignore"):  # EVI's denominator can reach 0 on very bright pixels
+        values = {name: INDICES[name]["formula"](refl) for name in args.indices}
     blue_minus_red = refl["B02"] - refl["B04"]
 
     rows = []
-    for name, inside in zip(names, masks):
-        if inside is None:
-            continue
+    for i, inside in masks.items():
+        name = names[i]
         use = inside & valid
         clear = use.sum() / max(inside.sum(), 1)
         if not use.any() or clear < args.min_clear:
@@ -244,24 +305,43 @@ def scene_fields(item, names, layouts, args):
                "item": item}
         for idx in args.indices:
             v = values[idx][use]
-            row[f"{idx}_mean"] = float(v.mean())
-            row[f"{idx}_median"] = float(np.median(v))
-            row[f"{idx}_std"] = float(v.std())
+            v = v[np.isfinite(v)]
+            row[f"{idx}_mean"] = float(v.mean()) if len(v) else float("nan")
+            row[f"{idx}_median"] = float(np.median(v)) if len(v) else float("nan")
+            row[f"{idx}_std"] = float(v.std()) if len(v) else float("nan")
         rows.append(row)
     return rows
+
+
+def hazy_dates(rows, args):
+    """Dates whose scene was hazy, judged from all fields together.
+
+    Haze is in the air, not in a field, and it brightens blue more than red. The test only
+    works over dense crops (soil pulls blue - red far below zero), and even healthy dense crops
+    sit near zero with some spread, so no single field decides: a date is hazy when the
+    median blue - red of its dense-crop fields (NDVI above DENSE_NDVI) exceeds --haze.
+    """
+    by_date = {}
+    for r in rows:
+        if r["NDVI_median"] > DENSE_NDVI:
+            by_date.setdefault(r["date"], []).append(r["haze_score"])
+    n_fields = len({r["field"] for r in rows})
+    enough = min(5, max(1, n_fields // 3))  # need several dense fields, or one for a tiny set of fields
+    return {d for d, scores in by_date.items() if len(scores) >= enough and np.median(scores) > args.haze}
 
 
 def add_flags(rows, names, args):
     """Mark suspicious observations with the reasons, instead of dropping them.
 
     rows must be sorted by date. Sets row["flag"] to "ok", or reasons joined with "+":
-    haze, dip, scene_haze.
+    haze (the whole scene was hazy that date) and dip (a short drop in this field's NDVI).
     """
+    hazy = hazy_dates(rows, args)
     for name in names:
         mine = [r for r in rows if r["field"] == name]
         for i, r in enumerate(mine):
             reasons = []
-            if r["haze_score"] > args.haze:
+            if r["date"] in hazy:
                 reasons.append("haze")
             if 0 < i < len(mine) - 1:
                 before, after = mine[i - 1], mine[i + 1]
@@ -271,15 +351,6 @@ def add_flags(rows, names, args):
                 if close and v < before["NDVI_median"] - args.dip and v < after["NDVI_median"] - args.dip:
                     reasons.append("dip")
             r["flag"] = "+".join(reasons) or "ok"
-
-    # Haze is in the air, not in a field. The blue - red test only works over dense crops
-    # (soil pulls it far below zero), so one hazy field marks every field on that date.
-    # This assumes the fields lie within a few km of each other.
-    hazy_dates = {r["date"] for r in rows if "haze" in r["flag"].split("+")}
-    for r in rows:
-        reasons = r["flag"].split("+")
-        if r["date"] in hazy_dates and "haze" not in reasons:
-            r["flag"] = "+".join(["scene_haze"] + [x for x in reasons if x != "ok"])
 
 
 def plot_timeseries(rows, names, args, path):
@@ -450,12 +521,19 @@ def main():
     utm = fields.to_crs(fields.estimate_utm_crs())
     twenty_m = [i for i in args.indices if set(INDICES[i]["bands"]) & TWENTY_M_BANDS]
     print(f"{len(fields)} fields from {args.fields}, shrunk by {args.buffer:g} m:")
-    print(f"  {'field':22} {'acres':>6} {'pure 10 m px':>13} {'pure 20 m px':>13}")
-    for name, geom in zip(names, utm.geometry):
-        shrunk = geom.buffer(-args.buffer)
-        n10, n20 = pure_pixels(shrunk, 10), pure_pixels(shrunk, 20)
-        note = "  <- too small, skipped" if n10 == 0 else ("  <- few 20 m pixels" if twenty_m and n20 < 10 else "")
-        print(f"  {name:22} {geom.area / 4047:6.1f} {n10:13d} {n20:13d}{note}")
+    counts = [(name, geom.area / 4047, pure_pixels(geom.buffer(-args.buffer), 10),
+               pure_pixels(geom.buffer(-args.buffer), 20)) for name, geom in zip(names, utm.geometry)]
+    if len(fields) <= MAX_PLOTTED:
+        print(f"  {'field':22} {'acres':>6} {'pure 10 m px':>13} {'pure 20 m px':>13}")
+        for name, acres, n10, n20 in counts:
+            note = "  <- too small, skipped" if n10 == 0 else ("  <- few 20 m pixels" if twenty_m and n20 < 10 else "")
+            print(f"  {name:22} {acres:6.1f} {n10:13d} {n20:13d}{note}")
+    else:
+        none = [n for n, _, n10, _ in counts if n10 == 0]
+        print(f"  median {np.median([c[2] for c in counts]):.0f} pure 10 m pixels per field; "
+              f"{sum(c[3] < 10 for c in counts)} fields have fewer than 10 pure 20 m pixels")
+        if none:
+            print(f"  too small to measure, skipped: {', '.join(none)}")
     if twenty_m:
         print(f"  ({', '.join(twenty_m)} use 20 m bands, so they rest on the 20 m count.)")
 
@@ -483,19 +561,24 @@ def main():
             w.writerow([r["field"], r["date"], r["pixels"], f"{r['clear_fraction']:.2f}",
                         f"{r['haze_score']:.4f}", r["flag"]] + [f"{r[s]:.4f}" for s in stats])
 
-    plot_timeseries(rows, names, args, os.path.join(args.out, "fields_timeseries.png"))
-    plot_flagged(rows, fields, args, os.path.join(args.out, "fields_flagged.png"))
-    all_clear = [d for d in sorted({r["date"] for r in rows}, reverse=True)
-                 if sum(r["date"] == d and r["flag"] == "ok" for r in rows) == len(names)]
-    if all_clear:
-        item = next(r["item"] for r in rows if r["date"] == all_clear[0])
-        plot_map(item, fields, args, os.path.join(args.out, "fields_map.png"))
+    if len(names) <= MAX_PLOTTED:
+        plot_timeseries(rows, names, args, os.path.join(args.out, "fields_timeseries.png"))
+        plot_flagged(rows, fields, args, os.path.join(args.out, "fields_flagged.png"))
+        all_clear = [d for d in sorted({r["date"] for r in rows}, reverse=True)
+                     if sum(r["date"] == d and r["flag"] == "ok" for r in rows) == len(names)]
+        if all_clear:
+            item = next(r["item"] for r in rows if r["date"] == all_clear[0])
+            plot_map(item, fields, args, os.path.join(args.out, "fields_map.png"))
 
-    print("\nFlagged observations (kept in fields.csv, drawn hollow on the chart):")
-    for r in rows:
-        if r["flag"] != "ok":
-            print(f"  {r['field']:22} {r['date']}  {r['flag']:9} NDVI {r['NDVI_median']:.2f}  "
-                  f"haze score {r['haze_score']:+.3f}")
+        print("\nFlagged observations (kept in fields.csv, drawn hollow on the chart):")
+        for r in rows:
+            if r["flag"] != "ok":
+                print(f"  {r['field']:22} {r['date']}  {r['flag']:9} NDVI {r['NDVI_median']:.2f}  "
+                      f"haze score {r['haze_score']:+.3f}")
+    else:
+        print(f"\nMore than {MAX_PLOTTED} fields: charts skipped (see fields.csv). "
+              f"{sum(r['flag'] != 'ok' for r in rows)} of {len(rows)} observations flagged: "
+              + ", ".join(f"{k} {v}" for k, v in sorted(Counter(r['flag'] for r in rows if r['flag'] != 'ok').items())))
 
     idx = args.indices[0]
     print(f"\n{'field':22} {'dates':>5}   {idx} median: {'peak':>17} {'lowest':>17} {'latest':>17}")
@@ -508,8 +591,10 @@ def main():
         cell = lambda r: f"{r[key]:+.2f} {r['date']}"
         hi, lo = max(mine, key=lambda r: r[key]), min(mine, key=lambda r: r[key])
         print(f"{name:22} {len(mine):5d}   {'':{len(idx) + 8}} {cell(hi):>17} {cell(lo):>17} {cell(mine[-1]):>17}")
-    print(f"\nSaved fields.csv, fields_timeseries.png, fields_flagged.png and fields_map.png in ./{args.out}/ "
-          f"in {time.monotonic() - started:.0f} s" + (f" (pixel cache: ./{CACHE_DIR}/)" if CACHE_DIR else ""))
+    saved = "fields.csv" + (", fields_timeseries.png, fields_flagged.png and fields_map.png"
+                            if len(names) <= MAX_PLOTTED else "")
+    print(f"\nSaved {saved} in ./{args.out}/ in {time.monotonic() - started:.0f} s"
+          + (f" (pixel cache: ./{CACHE_DIR}/)" if CACHE_DIR else ""))
 
 
 if __name__ == "__main__":

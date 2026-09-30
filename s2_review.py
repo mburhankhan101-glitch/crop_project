@@ -13,6 +13,8 @@ Fields not in the decisions file are kept as drawn.
 
 Blind test labels from labels/blind_test_labels.csv (if present) are then merged in, with
 source "blind", their confidence per season, and the labeller and reasoning in the notes.
+Training labels from labels/train_labels.csv (if present) follow, with source "curve"; they
+never replace a label that is already there.
 
     python s2_review.py
 """
@@ -27,6 +29,7 @@ def parse_args():
     p.add_argument("--auto", default=os.path.join("labels", "fields_auto.geojson"))
     p.add_argument("--decisions", default=os.path.join("labels", "review_decisions.csv"))
     p.add_argument("--blind", default=os.path.join("labels", "blind_test_labels.csv"))
+    p.add_argument("--train", default=os.path.join("labels", "train_labels.csv"))
     p.add_argument("--out", default=os.path.join("labels", "fields.geojson"))
     return p.parse_args()
 
@@ -60,18 +63,27 @@ def main():
                 props[f"{season}_confidence"] = confidence
         kept.append(f)
 
-    blind = {r["name"]: r for r in csv.DictReader(open(args.blind))} if os.path.exists(args.blind) else {}
     by_name = {f["properties"]["name"]: f["properties"] for f in kept}
-    for name, r in blind.items():
-        props = by_name.get(name)
-        if props is None:
-            raise SystemExit(f"{args.blind} names a field not in {args.out}: {name}")
-        for season in ("rabi_2026", "kharif_2026"):
-            if r[season]:
-                props[season] = r[season]
-                props[f"{season}_source"] = "blind"
-                props[f"{season}_confidence"] = r[f"{season}_confidence"]
-        props["notes"] = f"{r['labeller']}: {r['notes']}"
+    merged = {}
+    for path, source in ((args.blind, "blind"), (args.train, "curve")):
+        rows = {r["name"]: r for r in csv.DictReader(open(path))} if os.path.exists(path) else {}
+        merged[source] = 0
+        for name, r in rows.items():
+            props = by_name.get(name)
+            if props is None:
+                raise SystemExit(f"{path} names a field not in {args.out}: {name}")
+            if source == "curve" and props["role"] == "test":
+                raise SystemExit(f"{path} labels test field {name}: test labels must stay blind")
+            wrote = False
+            for season in ("rabi_2026", "kharif_2026"):
+                if r[season] and not props[season]:  # never replace an existing label
+                    props[season] = r[season]
+                    props[f"{season}_source"] = source
+                    props[f"{season}_confidence"] = r[f"{season}_confidence"]
+                    wrote = True
+            if wrote:
+                props["notes"] = f"{r['labeller']}: {r['notes']}"
+                merged[source] += 1
 
     with open(args.out, "w") as fh:
         fh.write('{\n  "type": "FeatureCollection",\n  "features": [\n')
@@ -82,7 +94,7 @@ def main():
     print(f"{len(kept)} fields written to {args.out} (" + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())) + ")")
     print(f"  test fields: {len(test)}, of which {len(to_label)} still need blind labels")
     labelled = [f for f in kept if f["properties"]["rabi_2026"]]
-    print(f"  labelled so far: {len(labelled)} fields ({len(blind)} blind, "
+    print(f"  labelled: {len(labelled)} of {len(kept)} fields ({merged['blind']} blind, {merged['curve']} from curves, "
           f"{sum(f['properties']['review'] == 'non_crop' for f in kept)} non_crop from the review)")
 
 

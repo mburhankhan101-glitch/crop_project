@@ -1,0 +1,66 @@
+name,cluster,distance,rabi_2026,rabi_2026_confidence,kharif_2026,kharif_2026_confidence,labeller,notes
+g0403,0,0.112,wheat,high,other_kharif,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul"
+g0708,0,0.12,wheat,high,other_kharif,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul"
+g0209,0,0.121,wheat,high,other_kharif,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul"
+g0901,0,0.126,wheat,high,other_kharif,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul"
+g0208,0,0.131,wheat,high,other_kharif,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul"
+g0906,0,0.135,wheat,high,other_kharif,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul"
+g0900,0,0.152,wheat,high,other_kharif,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul"
+g0107,0,0.155,wheat,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul; farther than median from the cluster centre"
+g0700,0,0.162,wheat,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul; farther than median from the cluster centre"
+g0300,0,0.172,wheat,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul; farther than median from the cluster centre"
+g0104,0,0.189,wheat,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul; farther than median from the cluster centre"
+g0001,0,0.194,wheat,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul; farther than median from the cluster centre"
+g0301,0,0.194,wheat,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul; farther than median from the cluster centre"
+g0909,0,0.21,wheat,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 0: wheat, then an early summer crop peaking Jun-Jul; farther than median from the cluster centre"
+g0904,1,0.068,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0400,1,0.069,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0308,1,0.083,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0601,1,0.094,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0903,1,0.096,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0603,1,0.106,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0305,1,0.11,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0703,1,0.112,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0502,1,0.113,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0505,1,0.114,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0602,1,0.119,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0606,1,0.12,wheat,high,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation
+g0106,1,0.133,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0902,1,0.134,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0504,1,0.14,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0706,1,0.147,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0702,1,0.147,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0007,1,0.151,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0705,1,0.158,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0407,1,0.158,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0203,1,0.172,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0207,1,0.18,wheat,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 1: rice-wheat rotation; farther than median from the cluster centre
+g0608,1,0.215,short_winter,medium,rice,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: green Jan-Feb, harvested by Mar while wheat continues"
+g0105,1,0.234,wheat,high,fallow,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),individual curve: rice -> wheat peak Feb-Mar -> bare all summer
+g0309,1,0.235,wheat,medium,rice,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),individual curve: wheat Jan-Apr; fodder flush in May cut 10 Jun; then rice
+g0704,2,0.108,wheat,low,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 2: early short crop Oct-Nov, then a wheat-like season peaking Mar"
+g0002,2,0.121,wheat,low,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 2: early short crop Oct-Nov, then a wheat-like season peaking Mar"
+g0102,2,0.121,wheat,low,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 2: early short crop Oct-Nov, then a wheat-like season peaking Mar"
+g0806,2,0.136,wheat,low,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 2: early short crop Oct-Nov, then a wheat-like season peaking Mar; farther than median from the cluster centre"
+g0509,2,0.136,wheat,low,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 2: early short crop Oct-Nov, then a wheat-like season peaking Mar; farther than median from the cluster centre"
+g0609,2,0.141,wheat,low,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"cluster 2: early short crop Oct-Nov, then a wheat-like season peaking Mar; farther than median from the cluster centre"
+g0205,3,0.1,other_winter,medium,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat)
+g0108,3,0.124,other_winter,medium,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat)
+g0103,3,0.129,other_winter,medium,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat)
+g0101,3,0.129,other_winter,medium,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat)
+g0109,3,0.136,other_winter,low,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat); farther than median from the cluster centre
+g0506,3,0.148,other_winter,low,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat); farther than median from the cluster centre
+g0801,3,0.171,other_winter,low,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat); farther than median from the cluster centre
+g0607,3,0.174,other_winter,low,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat); farther than median from the cluster centre
+g0006,3,0.177,other_winter,low,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 3: green from early Nov through Apr (too early for wheat); farther than median from the cluster centre
+g0004,4,0.113,short_winter,low,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: green Oct-Dec, bare Jan-Feb; spring crop; green Aug"
+g0302,4,0.147,unknown,low,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: permanent vegetation 0.3-0.7: trees or grass, 0.2 acre"
+g0808,4,0.176,sugarcane,medium,sugarcane,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: high Oct-Dec, harvest dip in Jan, ratoon regrowth, green all summer"
+g0604,4,0.18,short_winter,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: green Oct-Dec, bare Jan; spring crop Mar-May; summer crop"
+g0307,4,0.191,short_winter,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: green Oct-Dec, bare Jan; spring crop; summer crop"
+g0401,4,0.195,short_winter,low,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),individual curve: short cycles Dec-Jan and Mar-Apr
+g0201,4,0.213,orchard,medium,orchard,medium,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: 0.5-0.85 all year, never harvested"
+g0807,4,0.223,short_winter,medium,other_kharif,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: green Nov-Dec, bare by Mar; spring and summer crops"
+g0405,4,0.279,unknown,low,rice,high,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: bare until Feb, peak in Apr (spring maize or late wheat); flooded in Jun, green Aug"
+g0005,5,0.076,non_crop,low,non_crop,low,claude (curve: k-means cluster and per-field NDVI/NDWI),cluster 5: never above about 0.3; farther than median from the cluster centre
+g0802,5,0.127,fallow,medium,unknown,low,claude (curve: k-means cluster and per-field NDVI/NDWI),"individual curve: 0.2-0.4 all winter, green only in Aug"
