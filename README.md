@@ -218,6 +218,61 @@ Fields here are small (median about 1 acre; 61 have fewer than 10 pure 20 m pixe
 traced outlines are shrunk by 5 m, half a pixel, rather than 10 m. Rare classes will need
 merging before training, and most labels are a model's reading rather than a farmer's answer.
 
+## Crop classification (Rabi 2026)
+
+`s2_classify.py` predicts each field's Rabi crop as wheat, other_crop (other_winter,
+short_winter, sugarcane, orchard) or not_cropped (non_crop, fallow); `unknown` is left out.
+That gives 68 training and 27 test fields.
+
+```powershell
+python s2_classify.py            # cross-validation on the training fields only
+python s2_classify.py --test     # the one look at the blind test fields (refuses a second run)
+```
+
+- **Features:** set A is every index on every 5-day date from October to May (200 columns, more
+  than the 68 fields); set B is 16 hand-made ones (monthly NDVI, peak and its date, days above
+  0.5, NDMI/NDWI in March, EVI peak, NDRE in February).
+- **Models:** a majority baseline, L2 logistic regression, an RBF SVM, a random forest and
+  gradient boosting. All except boosting use balanced class weights; boosting gets balanced
+  sample weights. C is tuned inside the training strips only (nested leave-one-strip-out).
+- **Choosing:** by leave-one-strip-out balanced accuracy, taking the simplest model within one
+  standard error of the best. Random 5-fold CV is reported only to measure the neighbour effect.
+  The choice was fixed before the test set was opened.
+
+| | Accuracy | Balanced accuracy |
+|---|---|---|
+| Majority baseline (always wheat) | 65% | 33% |
+| Spatial CV, set B + logistic regression | 99% (±3) | 98% |
+| Random CV, same model | 96% | 96% |
+| **Blind test (27 fields, once)** | **89% (±12)** | **81%** |
+
+![Confusion matrices: spatial CV and blind test](output/classify/confusion.png)
+
+What it shows:
+
+- **Seven of eight models tie at about 98%** in spatial CV, and 16 hand-made features do as well
+  as 200 raw ones. The training labels came from clustering these same curves, so CV mostly
+  measures how well a model re-finds the clusters.
+- **The blind test is 10 points lower** (17 points lower for balanced accuracy). That gap measures
+  how much the curve-based evaluation flattered the model. Wheat is 17 of 17; all three errors
+  are in the rarer classes:
+  - two non_crop fields with green outlines (winter NDVI 0.64 and 0.56) were called other_crop.
+    Every training non_crop field has winter NDVI of 0.26 or less, so the model never saw green
+    non-crop land. g0000 is a line of canal-bank trees. g0202's point sits on a road verge, but
+    its outline covers the green patch beside it, so the label describes the point while the
+    series describes the outline, and the model may well be right about the outline;
+  - one early winter crop, harvested in early March, was called wheat. The same confusion is
+    the only spatial-CV mistake (g0608, short_winter).
+- **High-confidence test labels: 14 of 14 right.** Medium: 6 of 8; low: 4 of 5.
+- **No measurable neighbour effect** (random CV is 2 points *lower*). With near-perfect scores
+  there is no room for a gap, so this neither confirms nor rules it out.
+- **Dropping the 14 low-confidence training labels hurt** (99% → 94%). With 68 fields, more
+  labels beat cleaner labels here.
+- **April NDVI is the strongest feature:** wheat is harvested in April, while other crops stay
+  green and bare land stays low.
+
+![Feature weights of the final model](output/classify/importance.png)
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -244,7 +299,7 @@ Each step adds a feature and teaches one concept.
 
 **Machine learning (CS229)**
 - [x] Labelled dataset of 60–100 fields by crop system
-- [ ] Crop classification: logistic regression, SVM, gradient-boosted trees, with spatial cross-validation
+- [x] Crop classification: logistic regression, SVM, gradient-boosted trees, with spatial cross-validation
 - [ ] Write-up
 
 **Radar and deep learning**

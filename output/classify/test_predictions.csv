@@ -1,0 +1,28 @@
+field,true,pred,confidence,label,notes
+g0009,other_crop,other_crop,low,other_winter,claude (true-colour chips and visible RGB only): not fully blind: NDVI profile s
+g0709,wheat,wheat,medium,wheat,claude (true-colour chips and visible RGB only): small; classic wheat pattern; g
+g0809,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; green 8 Sep
+g0907,wheat,wheat,medium,wheat,claude (true-colour chips and visible RGB only): small; classic wheat; green 8 S
+g0000,not_cropped,other_crop,medium,non_crop,
+g0003,not_cropped,not_cropped,low,fallow,claude (true-colour chips and visible RGB only): never clearly green in winter; 
+g0200,not_cropped,not_cropped,high,non_crop,
+g0202,not_cropped,other_crop,medium,non_crop,
+g0204,wheat,wheat,high,wheat,"claude (true-colour chips and visible RGB only): green Jan-Mar, bare by 26 Apr; "
+g0303,wheat,wheat,high,wheat,"claude (true-colour chips and visible RGB only): classic wheat; bare 7 Jun, gree"
+g0402,wheat,wheat,high,wheat,"claude (true-colour chips and visible RGB only): classic wheat; bare 7 Jun, gree"
+g0404,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; bare on 7 Jun an
+g0406,not_cropped,not_cropped,medium,non_crop,claude (true-colour chips and visible RGB only): red above green on all 8 dates;
+g0408,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; only weakly gree
+g0409,wheat,wheat,medium,wheat,claude (true-colour chips and visible RGB only): late green-up (weak on 21 Jan);
+g0501,wheat,wheat,medium,wheat,claude (true-colour chips and visible RGB only): small; green Feb-Mar; mixed col
+g0503,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; dark patches on 
+g0507,not_cropped,not_cropped,high,non_crop,
+g0600,other_crop,wheat,low,other_winter,"claude (true-colour chips and visible RGB only): very green already on 7 Dec, ye"
+g0701,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): not fully blind: NDVI profile s
+g0707,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; bare on 7 Jun an
+g0805,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; not green on 8 S
+g0905,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; not green on 8 S
+g0800,wheat,wheat,medium,wheat,claude (true-colour chips and visible RGB only): green Jan-Mar (weaker in Mar); 
+g0803,wheat,wheat,high,wheat,claude (true-colour chips and visible RGB only): classic wheat; green 8 Sep
+g0804,other_crop,other_crop,low,sugarcane,claude (true-colour chips and visible RGB only): not fully blind: NDVI profile s
+g0206,other_crop,other_crop,low,other_winter,claude (true-colour chips and visible RGB only): strongly green already on 7 Dec
