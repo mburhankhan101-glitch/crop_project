@@ -2,31 +2,59 @@
 % numbers come from the macros in generated/numbers.tex (\TestAcc, \NTrain, ...), so a re-run of
 % the pipeline updates the text. Never type a result by hand; add a macro instead.
 
-\documentclass[11pt]{article}
-\usepackage[margin=1in]{geometry}
+\documentclass[10pt]{article}
+\usepackage[letterpaper,textwidth=5.5in,textheight=9in,centering,headsep=0pt,footskip=0.4in]{geometry}
 \usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{newtxtext,newtxmath}
 \usepackage{microtype}
+\usepackage{xurl}
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[font=small,labelfont=bf,skip=5pt]{caption}
+\usepackage{titlesec}
 \usepackage[numbers,sort&compress]{natbib}
-\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\definecolor{linkblue}{RGB}{0,62,138}
+\usepackage[colorlinks=true,linkcolor=linkblue,citecolor=linkblue,urlcolor=linkblue]{hyperref}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{0.7em}{}
+\titlespacing*{\section}{0pt}{2.2ex plus 0.6ex minus 0.3ex}{1.0ex plus 0.2ex}
+\titleformat{\paragraph}[runin]{\normalsize\bfseries}{}{}{}
+\titlespacing*{\paragraph}{0pt}{1.2ex plus 0.4ex minus 0.2ex}{0.6em}
+\setlist{nosep,leftmargin=1.6em,topsep=3pt}
+\setlength{\parskip}{0pt}
+\setlength{\bibsep}{2pt plus 1pt}
+\renewcommand{\bibfont}{\small}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.8}
+\setlength{\textfloatsep}{12pt plus 3pt minus 3pt}
 
 \input{generated/numbers}
-\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 \newcommand{\field}[1]{\texttt{#1}}
-
-\title{Curve-Derived Labels Flatter a Crop Classifier:\\ A Blind Test with Sentinel-2 near Lahore}
-\author{Burhan Khan\\ \todo{university}}
-\date{October 2026}
+\hypersetup{pdftitle={Curve-Derived Labels Flatter a Crop Classifier: A Blind Test with Sentinel-2 near Lahore},
+            pdfauthor={Burhan Khan}}
 
 \begin{document}
-\maketitle
+
+\begin{center}
+  \rule{\textwidth}{1.6pt}\\[0.9em]
+  {\LARGE\bfseries Curve-Derived Labels Flatter a Crop Classifier:\\[0.25em]
+   A Blind Test with Sentinel-2 near Lahore\par}
+  \vspace{0.55em}\rule{\textwidth}{0.6pt}\\[1.2em]
+  {\large Burhan Khan}\\[0.2em]
+  University of Management and Technology, Lahore\\[0.1em]
+  {\small\url{https://github.com/mburhankhan101-glitch/crop_project}}\\[0.3em]
+  {\small October 2026}
+\end{center}
+\vspace{0.6em}
 
 % ---------------------------------------------------------------------------------------------
-\begin{abstract}
+\begin{center}\textbf{\large Abstract}\end{center}
+\vspace{-0.4em}
+\begin{quote}
 Crop-type maps of Punjab's small farms could support food-security and water planning, but there are
 no public field labels to train or test them on. A common workaround is to label fields from the
 satellite time series itself, which risks an evaluation that only measures agreement with that
@@ -39,7 +67,7 @@ test set. Spatial cross-validation gave \CVAcc{} accuracy; the blind test gave \
 (\TestCorrect/\NTest, $\pm$\TestMargin{} points) against a \BaselineTest{} majority baseline.
 When training labels are derived from the same curves the model learns from, cross-validation
 overstates accuracy, and an independently labelled test set is needed to measure by how much.
-\end{abstract}
+\end{quote}
 
 % ---------------------------------------------------------------------------------------------
 \section{Introduction}
@@ -72,6 +100,26 @@ by how much. The contributions are:
 % ---------------------------------------------------------------------------------------------
 \section{Related work}
 
+\begin{figure}[t]
+  \centering
+  \begin{minipage}[b]{0.44\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/study_area.pdf}
+    \captionof{figure}{The \NFields{} sample points by Rabi 2026 class. Circles: training; triangles:
+    blind test, six per strip. Dashed lines: the five 2\,km strips used as cross-validation blocks.}
+    \label{fig:area}
+  \end{minipage}\hfill
+  \begin{minipage}[b]{0.52\textwidth}
+    \centering
+    \captionof{table}{Rabi 2026 labels and the three classes they were merged into; unknown fields
+    were left out.}
+    \label{tab:data}
+    \small
+    \input{generated/tab_data}
+    \vspace{1.2em}
+  \end{minipage}
+\end{figure}
+
 We use Sentinel-2 surface reflectance \cite{drusch2012sentinel2} and standard vegetation indices,
 NDVI above all \cite{tucker1979ndvi}. Our training labels follow the idea of
 \citet{wang2019croptype}, who mapped crop types without field-level labels by clustering satellite
@@ -85,6 +133,7 @@ with almost no predictive power \cite{ploton2020spatial}. We use spatial blocks 
 
 % ---------------------------------------------------------------------------------------------
 \section{Data}
+
 
 \paragraph{Study area and imagery.} The study area is a 10\,$\times$\,10\,km square centred at
 \CentreLat\,N, \CentreLon\,E, near Raiwind, south-west of Lahore, inside Sentinel-2 tile 43RDQ
@@ -111,14 +160,6 @@ predicting them, and no smoothing gave the lowest error, so none was applied. Tw
 almost every field: early December to late January (winter fog and smog) and mid-July to mid-August
 (monsoon cloud).
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.48\linewidth]{figures/study_area.pdf}
-  \caption{The \NFields{} sample points, one per km$^2$, coloured by their Rabi 2026 class. Circles are
-  training fields and triangles blind test fields, six per strip. The dashed lines mark the five 2\,km
-  strips that serve as cross-validation blocks: each strip is held out in turn.}
-  \label{fig:area}
-\end{figure}
 
 % ---------------------------------------------------------------------------------------------
 \section{Labels}
@@ -151,12 +192,6 @@ wheat; other\_crop (other winter crops, short winter crops, sugarcane, orchards)
 December and January and is harvested in late March and April, other crops stay green into May, and the
 median NDVI of non-cropped land stays below about 0.2 all year.
 
-\begin{table}[t]
-  \centering
-  \caption{Rabi 2026 labels and the three classes they were merged into. Unknown fields were left out.}
-  \label{tab:data}
-  \input{generated/tab_data}
-\end{table}
 
 \begin{figure}[t]
   \centering
@@ -212,6 +247,43 @@ $p \pm 1.96\sqrt{p(1-p)/n}$.
 % ---------------------------------------------------------------------------------------------
 \section{Results}
 
+\begin{table}[t]
+  \centering
+  \begin{minipage}[t]{0.55\textwidth}
+    \centering
+    \caption{Balanced accuracy (\%) under spatial (leave-one-strip-out) and random 5-fold CV on the
+    \NTrain{} training fields; feature counts in brackets. Bold: chosen.}
+    \label{tab:models}
+    \small\setlength{\tabcolsep}{4pt}
+    \input{generated/tab_models}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.41\textwidth}
+    \centering
+    \caption{Recall of the chosen model per class, spatial CV vs the blind test.}
+    \label{tab:test}
+    \small\setlength{\tabcolsep}{4pt}
+    \input{generated/tab_test}
+  \end{minipage}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figures/confusion.pdf}
+  \caption{Confusion matrices of the chosen model. Left: spatial cross-validation on the curve-labelled
+  training fields, one error. Right: the blind test, evaluated once, three errors, all in the two
+  smaller classes.}
+  \label{fig:confusion}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/weights.pdf}
+  \caption{Weights of the final logistic regression on standardised features, one row per class.
+  Green favours the class, brown counts against it. April NDVI dominates: wheat has been harvested by
+  then, other crops have not.}
+  \label{fig:weights}
+\end{figure}
+
 \paragraph{Model comparison.} Table~\ref{tab:models} gives the balanced accuracy of every combination.
 The best spatial score was \TopBal, with a standard error of \SE, and \NNearTop{} of the eight trained
 combinations fell within one standard error of it. The rule therefore chose the simplest: set
@@ -237,41 +309,20 @@ negative for wheat and strongly positive for other\_crop. Moisture and water in 
 the number of days above NDVI 0.5 add to the same separation, while low peak NDVI and EVI point to
 not\_cropped.
 
-\begin{table}[t]
-  \centering
-  \caption{Balanced accuracy (\%) of every model and feature set, under spatial (leave-one-strip-out)
-  and random 5-fold cross-validation on the \NTrain{} training fields. Bold: the chosen model.}
-  \label{tab:models}
-  \input{generated/tab_models}
-\end{table}
 
-\begin{table}[t]
-  \centering
-  \caption{Per-class recall of the chosen model in spatial cross-validation and on the blind test.}
-  \label{tab:test}
-  \input{generated/tab_test}
-\end{table}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.85\linewidth]{figures/confusion.pdf}
-  \caption{Confusion matrices of the chosen model. Left: spatial cross-validation on the curve-labelled
-  training fields, one error. Right: the blind test, evaluated once, three errors, all in the two
-  smaller classes.}
-  \label{fig:confusion}
-\end{figure}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/weights.pdf}
-  \caption{Weights of the final logistic regression on standardised features, one row per class.
-  Green favours the class, brown counts against it. April NDVI dominates: wheat has been harvested by
-  then, other crops have not.}
-  \label{fig:weights}
-\end{figure}
 
 % ---------------------------------------------------------------------------------------------
 \section{Error analysis}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/errors.pdf}
+  \caption{The three blind-test errors (black) with the median training curves of their labelled class
+  (solid) and predicted class (dashed).}
+  \label{fig:errors}
+\end{figure}
 
 Each blind-test error is shown in Figure~\ref{fig:errors} against the median curves of its labelled and
 predicted classes.
@@ -296,13 +347,6 @@ that mostly ask whether a field is green in winter and bare in April. This is a 
 weakness; a feature for the timing of the harvest, such as the date NDVI falls below half its peak,
 would be a natural addition.
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/errors.pdf}
-  \caption{The three blind-test errors (black) with the median training curves of their labelled class
-  (solid) and predicted class (dashed).}
-  \label{fig:errors}
-\end{figure}
 
 % ---------------------------------------------------------------------------------------------
 \section{Discussion and limitations}

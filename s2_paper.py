@@ -30,8 +30,14 @@ CLASSES = ["wheat", "other_crop", "not_cropped"]
 COLOURS = {"wheat": "#c9962b", "other_crop": "#2c774c", "not_cropped": "#7a7a7a", "unknown": "#c8c8c8"}
 MODEL_NAMES = {"baseline": "Majority baseline", "logistic": "Logistic regression (L2)", "svm_rbf": "SVM (RBF kernel)",
                "random_forest": "Random forest", "grad_boost": "Gradient boosting"}
-plt.rcParams.update({"font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8, "legend.fontsize": 7,
-                     "xtick.labelsize": 7, "ytick.labelsize": 7, "figure.dpi": 150, "savefig.bbox": "tight"})
+TEXT_WIDTH = 5.5  # inches: the report's text block, so figures are drawn at their printed size
+SHORT_NAMES = {"baseline": "Majority baseline", "logistic": "Logistic reg.", "svm_rbf": "SVM (RBF)",
+               "random_forest": "Random forest", "grad_boost": "Gradient boosting"}
+plt.rcParams.update({"font.family": "STIXGeneral", "mathtext.fontset": "stix", "font.size": 8,
+                     "axes.titlesize": 8, "axes.labelsize": 8, "legend.fontsize": 7, "xtick.labelsize": 7,
+                     "ytick.labelsize": 7, "axes.linewidth": 0.6, "xtick.major.width": 0.6,
+                     "ytick.major.width": 0.6, "axes.spines.top": False, "axes.spines.right": False,
+                     "figure.dpi": 150, "savefig.bbox": "tight", "savefig.pad_inches": 0.02})
 
 
 def parse_args():
@@ -64,11 +70,12 @@ def fig_area(points, known, labels, path):
     x0, y0 = centre.x - 5000, centre.y - 5000
     pts = points.to_crs(crs)
     pts["cls"] = pts["name"].map(labels).fillna("unknown")
-    fig, ax = plt.subplots(figsize=(3.4, 3.4))
+    fig, ax = plt.subplots(figsize=(2.55, 2.55))
+    ax.spines[["top", "right"]].set_visible(True)
     for k in range(6):
         ax.axvline(2 * k, color="#999999", lw=0.6, ls="--")
     for k in range(5):
-        ax.text(2 * k + 1, 10.25, f"strip {k + 1}", ha="center", va="bottom", fontsize=6.5, color="#555555")
+        ax.text(2 * k + 1, 10.25, f"strip {k + 1}", ha="center", va="bottom", fontsize=6, color="#555555")
     for cls in ["wheat", "other_crop", "not_cropped", "unknown"]:
         for role, marker in (("train", "o"), ("test", "^")):
             sel = pts[(pts["cls"] == cls) & (pts["role"] == role)]
@@ -78,7 +85,8 @@ def fig_area(points, known, labels, path):
                           label=c.replace("_", " ")) for c in ["wheat", "other_crop", "not_cropped", "unknown"]]
     handles += [plt.Line2D([], [], ls="", marker=m, color="white", markeredgecolor="black", label=r)
                 for m, r in (("o", "training"), ("^", "blind test"))]
-    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=3, frameon=False)
+    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=3, frameon=False,
+              columnspacing=0.8, handletextpad=0.2)
     ax.set_xlim(-0.2, 10.2)
     ax.set_ylim(-0.2, 10.2)
     ax.set_aspect("equal")
@@ -92,7 +100,7 @@ def fig_profiles(matrix, y, path):
     """Median and interquartile range of NDVI per class, training fields only."""
     cols = [c for c in matrix.columns if c.startswith("NDVI_")]
     dates = [column_date(c) for c in cols]
-    fig, ax = plt.subplots(figsize=(6.8, 2.4))
+    fig, ax = plt.subplots(figsize=(TEXT_WIDTH, 2.0))
     ax.axvspan(pd.Timestamp("2025-10-01"), pd.Timestamp("2026-05-31"), color="#f4e7c8", alpha=0.6, lw=0,
                label="feature window")
     for cls in CLASSES:
@@ -109,8 +117,9 @@ def fig_profiles(matrix, y, path):
 
 
 def fig_confusion(panels, path):
-    fig, axes = plt.subplots(1, len(panels), figsize=(3.3 * len(panels), 2.6))
+    fig, axes = plt.subplots(1, len(panels), figsize=(TEXT_WIDTH * 0.85, 2.05))
     for ax, (title, y, pred) in zip(axes, panels):
+        ax.spines[:].set_visible(True)
         cm = confusion_matrix(y, pred, labels=CLASSES)
         ax.imshow(cm, cmap="Greens")
         for i in range(3):
@@ -118,7 +127,7 @@ def fig_confusion(panels, path):
                 ax.text(j, i, cm[i, j], ha="center", va="center", fontsize=9,
                         color="white" if cm[i, j] > cm.max() / 2 else "black")
         names = [c.replace("_", " ") for c in CLASSES]
-        ax.set_xticks(range(3), names)
+        ax.set_xticks(range(3), [c.replace("_", "\n") for c in CLASSES])
         ax.set_yticks(range(3), names)
         ax.set_xlabel("predicted")
         ax.set_ylabel("label")
@@ -134,8 +143,9 @@ def fig_weights(model, columns, path):
     order = list(clf.classes_)
     coef = pd.DataFrame(clf.coef_, index=order, columns=columns).loc[CLASSES]
     lim = np.abs(coef.values).max()
-    fig, ax = plt.subplots(figsize=(6.8, 1.6))
+    fig, ax = plt.subplots(figsize=(TEXT_WIDTH, 1.55))
     im = ax.imshow(coef.values, cmap="BrBG", vmin=-lim, vmax=lim, aspect="auto")
+    ax.spines[:].set_visible(True)
     ax.set_yticks(range(3), [c.replace("_", " ") for c in CLASSES])
     ax.set_xticks(range(len(columns)), [c.replace("_", " ") for c in columns], rotation=45, ha="right")
     fig.colorbar(im, ax=ax, fraction=0.03, pad=0.01, label="weight")
@@ -148,19 +158,25 @@ def fig_errors(matrix, y_train, test, path):
     cols = [c for c in matrix.columns if c.startswith("NDVI_")]
     dates = [column_date(c) for c in cols]
     wrong = test[test["true"] != test["pred"]]
-    fig, axes = plt.subplots(1, len(wrong), figsize=(2.3 * len(wrong), 2.1), sharey=True, squeeze=False)
+    fig, axes = plt.subplots(1, len(wrong), figsize=(TEXT_WIDTH, 2.15), sharey=True, squeeze=False)
     for ax, (name, r) in zip(axes[0], wrong.iterrows()):
         for cls, ls in ((r["true"], "-"), (r["pred"], "--")):
             ax.plot(dates, matrix.loc[y_train.index[y_train == cls], cols].median(), color=COLOURS[cls], lw=1.2,
-                    ls=ls, label=f"median {cls.replace('_', ' ')}")
+                    ls=ls)
         ax.plot(dates, matrix.loc[name, cols], color="black", lw=1, marker=".", ms=2, label=name)
         ax.set_title(f"{name}: labelled {r['true'].replace('_', ' ')},\npredicted {r['pred'].replace('_', ' ')}")
-        ax.legend(loc="best", fontsize=5.5, framealpha=0.85)
         ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 5, 9]))
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %y"))
         ax.set_ylim(0, 0.95)
     axes[0][0].set_ylabel("NDVI")
-    fig.tight_layout()
+    classes = sorted(set(wrong["true"]) | set(wrong["pred"]), key=CLASSES.index)
+    handles = [plt.Line2D([], [], color=COLOURS[c], lw=1.4, label=f"median {c.replace('_', ' ')}") for c in classes]
+    handles += [plt.Line2D([], [], color="grey", lw=1.2, ls="-", label="labelled class"),
+                plt.Line2D([], [], color="grey", lw=1.2, ls="--", label="predicted class"),
+                plt.Line2D([], [], color="black", lw=1, marker=".", ms=3, label="the field")]
+    fig.tight_layout(rect=(0, 0.1, 1, 1))
+    fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, columnspacing=1.2,
+               handlelength=1.8)
     fig.savefig(path)
     plt.close(fig)
 
@@ -182,13 +198,13 @@ def tab_data(props, path):
     open(path, "w").write("\n".join(lines) + "\n")
 
 
-def tab_models(results, chosen, path):
+def tab_models(results, chosen, sizes, path):
     """Balanced accuracy for every model, feature set and CV scheme; the chosen model in bold."""
     lines = [r"\begin{tabular}{lcccc}", r"\toprule",
-             r" & \multicolumn{2}{c}{Set A: full curve (200)} & \multicolumn{2}{c}{Set B: hand-made (16)} \\",
+             r" & \multicolumn{2}{c}{Set A (" + str(sizes["A"]) + r")} & \multicolumn{2}{c}{Set B (" + str(sizes["B"]) + r")} \\",
              r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}",
              r"Model & spatial & random & spatial & random \\", r"\midrule"]
-    for name, label in MODEL_NAMES.items():
+    for name, label in SHORT_NAMES.items():
         cells = []
         for fs in ("A", "B"):
             r = results[(results["features"] == fs) & (results["model"] == name)].iloc[0]
@@ -215,7 +231,7 @@ def tab_test(cv, test, path):
             row += [str(len(sel)), f"{sum(sel['pred'] == cls)}/{len(sel)}"]
         lines.append(" & ".join(row) + r" \\")
     lines.append(r"\midrule")
-    for label, fn in (("Accuracy", acc), ("Balanced accuracy", bal)):
+    for label, fn in (("Accuracy", acc), ("Balanced acc.", bal)):
         lines.append(f"{label} & & {pct(fn(cv))} & & {pct(fn(test))} \\\\")
     lines += [r"\bottomrule", r"\end{tabular}"]
     open(path, "w").write("\n".join(lines) + "\n")
@@ -265,7 +281,7 @@ def main():
     fig_errors(matrix, y, test, fig("errors.pdf"))
 
     tab_data(everyone, gen("tab_data.tex"))
-    tab_models(results, (fs, name), gen("tab_models.tex"))
+    tab_models(results, (fs, name), {f: X.shape[1] for f, X in sets.items()}, gen("tab_models.tex"))
     tab_test(cv, test, gen("tab_test.tex"))
 
     obs = pd.read_csv(args.fields_csv)
