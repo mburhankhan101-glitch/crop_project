@@ -276,6 +276,8 @@ def main():
     conf = test["confidence"]
     high = test[conf == "high"]
     by_source = everyone.loc[test.index]
+    jan_apr = [c for c in matrix.columns if c.startswith("NDVI_") and "2026-01-01" <= c[5:] <= "2026-04-30"]
+    winter = matrix[jan_apr].mean(axis=1)  # mean NDVI, January to April 2026
     tuned = {k.split("__")[1]: v for k, v in final.get_params().items() if k in models()[name][1]}
     numbers = {
         "NFields": len(everyone), "NTrain": len(y), "NTest": len(test),
@@ -297,6 +299,9 @@ def main():
         "TestCorrect": int((test["true"] == test["pred"]).sum()), "TestBaselineCorrect": int(round(base_test * len(test))),
         "NHigh": len(high), "NHighCorrect": int((high["true"] == high["pred"]).sum()),
         "NTestFromReview": sum(by_source["rabi_2026_source"] == "imagery+curve"),
+        "GapAcc": whole(acc(cv)) - whole(t_acc), "GapBal": whole(bal(cv)) - whole(bal(test)),
+        "WinterGzero": f"{winter['g0000']:.2f}", "WinterGtwo": f"{winter['g0202']:.2f}",
+        "WinterNonCropMax": f"{winter[y.index[y == 'not_cropped']].max():.2f}",
         "NTrainHighMed": int(lc.loc[1, "n_train"]),
         "ConfAllAcc": pct(lc.loc[0, "acc_all"]), "ConfCleanAcc": pct(lc.loc[1, "acc_all"]),
         "ConfAllBal": pct(lc.loc[0, "bal_all"]), "ConfCleanBal": pct(lc.loc[1, "bal_all"]),
