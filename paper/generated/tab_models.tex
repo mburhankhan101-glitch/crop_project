@@ -1,0 +1,13 @@
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{Set A: full curve (200)} & \multicolumn{2}{c}{Set B: hand-made (16)} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Model & spatial & random & spatial & random \\
+\midrule
+Majority baseline & 33 & 33 & 33 & 33 \\
+Logistic regression (L2) & 98 & 97 & \textbf{98} & 96 \\
+SVM (RBF kernel) & 98 & 97 & 97 & 94 \\
+Random forest & 92 & 95 & 98 & 97 \\
+Gradient boosting & 98 & 91 & 98 & 98 \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,3 @@
+training,n_train,acc_all,bal_all,acc_highmed,bal_highmed
+trained on all labels,68,0.985,0.98,0.981,0.967
+trained on high/medium,54,0.941,0.946,0.981,0.967

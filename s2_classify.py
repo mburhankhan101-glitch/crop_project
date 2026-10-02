@@ -173,6 +173,19 @@ def cross_predict(spec, X, y, groups, splits, keep=None):
     return pred
 
 
+def choose(results, n, sizes):
+    """One-standard-error rule: of the models within one standard error of the top spatial score,
+    take the simplest (fewer features first, then the simpler model). Differences smaller than
+    the noise are not evidence, and simpler models generalise better."""
+    contenders = results[results["model"] != "baseline"].copy()
+    top = contenders["spatial_bal"].max()
+    se = np.sqrt(top * (1 - top) / n)
+    contenders["size"] = contenders["features"].map(sizes)
+    contenders["order"] = contenders["model"].map(list(models()).index)
+    near = contenders[contenders["spatial_bal"] >= top - se]
+    return near.sort_values(["size", "order"]).iloc[0], top, se, near
+
+
 def scores(y, pred):
     return accuracy_score(y, pred), balanced_accuracy_score(y, pred)
 
@@ -291,17 +304,8 @@ def main():
     results = pd.DataFrame(rows)
     results.round(3).to_csv(os.path.join(args.out, "cv_results.csv"), index=False)
 
-    # One-standard-error rule: of the models within one standard error of the top spatial score,
-    # take the simplest (fewer features first, then the simpler model). Differences smaller than
-    # the noise are not evidence, and simpler models generalise better.
     n = len(y)
-    contenders = results[results["model"] != "baseline"].copy()
-    top = contenders["spatial_bal"].max()
-    se = np.sqrt(top * (1 - top) / n)
-    contenders["size"] = contenders["features"].map(lambda f: sets[f].shape[1])
-    contenders["order"] = contenders["model"].map(list(models()).index)
-    near = contenders[contenders["spatial_bal"] >= top - se]
-    best = near.sort_values(["size", "order"]).iloc[0]
+    best, top, se, near = choose(results, n, {f: X.shape[1] for f, X in sets.items()})
     fs, name = best["features"], best["model"]
     print(f"\nTop spatial balanced accuracy {top:.0%}, standard error {se:.1%}: "
           f"{len(near)} models within one SE; the simplest is chosen")
@@ -320,10 +324,14 @@ def main():
     pred_all = preds[(fs, name)]
     hm = conf != "low"
     print(f"\nLabel confidence ({clean.sum()} high/medium of {n} labels):")
+    rows = []
     for label, p in (("trained on all labels", pred_all), ("trained on high/medium", pred_clean)):
         a, b = scores(y, p)
         a2, b2 = scores(y[hm], p[hm])
+        rows.append({"training": label, "n_train": n if p is pred_all else int(clean.sum()),
+                     "acc_all": a, "bal_all": b, "acc_highmed": a2, "bal_highmed": b2})
         print(f"  {label:<24} all fields: acc {a:.0%} bal {b:.0%} | high/medium fields: acc {a2:.0%} bal {b2:.0%}")
+    pd.DataFrame(rows).round(3).to_csv(os.path.join(args.out, "label_confidence.csv"), index=False)
 
     cv = pd.DataFrame({"true": y, "pred": pred_all, "block": groups, "confidence": conf,
                        "label": props.loc[is_train, "rabi_2026"]})
