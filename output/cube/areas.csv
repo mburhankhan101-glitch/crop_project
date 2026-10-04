@@ -1,0 +1,6 @@
+class,pixels,hectares,share
+no data,0,0.0,0.0
+wheat,504868,5048.7,0.505
+other_crop,228056,2280.6,0.228
+not_cropped,127779,1277.8,0.128
+uncertain,139297,1393.0,0.139

@@ -7,3 +7,6 @@ geopandas
 pandas
 scipy
 scikit-learn
+xarray
+dask
+odc-stac
