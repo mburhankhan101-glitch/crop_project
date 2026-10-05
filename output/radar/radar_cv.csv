@@ -1,0 +1,9 @@
+features,model,accuracy,balanced,recall_wheat,recall_other_crop,recall_not_cropped
+optical (16),logistic,0.985,0.98,1.0,0.941,1.0
+optical (16),random_forest,0.985,0.98,1.0,0.941,1.0
+radar (24),logistic,0.662,0.569,0.75,0.529,0.429
+radar (24),random_forest,0.721,0.636,0.773,0.706,0.429
+"radar, Dec-Jan only (6)",logistic,0.5,0.59,0.409,0.647,0.714
+"radar, Dec-Jan only (6)",random_forest,0.559,0.52,0.636,0.353,0.571
+optical + radar (40),logistic,0.897,0.871,0.932,0.824,0.857
+optical + radar (40),random_forest,0.956,0.953,0.977,0.882,1.0

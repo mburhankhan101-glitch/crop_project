@@ -312,6 +312,49 @@ field features to two decimals, so the cube reproduces the field pipeline.
 - Counting pixels gives a biased area when the map has errors; the random sample is the
   unbiased estimate, which is why both are shown.
 
+## Radar: Sentinel-1 for the fields, and the 2022 floods
+
+Radar satellites send their own microwaves and measure what bounces back, so they see through
+cloud, fog and darkness. The data is Sentinel-1 RTC (terrain-corrected) from Planetary Computer,
+always from one viewing geometry, because backscatter depends on the angle the radar looks from.
+
+```powershell
+python s1_fields.py    # radar series for the 100 fields, compared with NDVI
+python s1_flood.py     # 2022 flood map around Dadu, Sindh
+```
+
+**Fields (`s1_fields.py`).** 33 passes (descending orbit 34), September 2025 to September 2026;
+7 of them fall in the winter-fog and monsoon gaps where the optical series has nothing.
+
+![Class medians, optical vs radar](output/radar/radar_vs_ndvi.png)
+
+- Cross-polarised backscatter (VH) follows NDVI only loosely: r = +0.52 over 2019 radar/optical pairs
+  within 3 days (VV: +0.16). It does show wheat greening up during the fog gap and, very clearly,
+  the bare, dry fields after the April harvest (about −19.5 dB).
+- On 6 April every class jumps by about 3 dB at once: a change in the whole scene (most likely wet
+  soil after rain), the radar's version of a hazy day.
+- Radar alone separates the three classes much less well than optical (spatial CV balanced accuracy
+  57–64% against 98%; baseline 33%). Adding the 24 radar features to the 16 optical ones made
+  logistic regression worse (87%): more, noisier features for 68 fields. The labels came from optical
+  curves, which favours optical; fields of about one acre (~40 pixels) also leave a lot of speckle.
+
+**Floods (`s1_flood.py`).** A 50 × 50 km box around Dadu, Johi and Khairpur Nathan Shah, which were
+submerged in September 2022; 21 passes from May to December 2022 at 20 m. Water is very dark in VV;
+the threshold (−13.7 dB) comes from Otsu's method on the darkest date. A pixel counts as flooded only
+if it is below the threshold **and** at least 3 dB darker than in June: dry, smooth desert soil is
+dark to radar as well (a June Sentinel-2 image shows only 4% of the June-dark area is water).
+
+![2022 flood map](output/flood/flood_map.png)
+
+![Flood area through 2022](output/flood/flood_timeseries.png)
+
+- Flooded area rose from under 10 km² in June to **935 km²** on 11 September, and 223 km² was
+  still under water at the end of December.
+- Against a cloud-free Sentinel-2 image of 10 September (NDWI > 0 as water): 96% of the radar flood
+  pixels were water in the optical image, and the radar found 87% of the optical water outside the
+  areas that were already dark in June.
+- Without the 3 dB rule, the same map showed 106 km² of "flood" in May, before any flood.
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -343,7 +386,7 @@ Each step adds a feature and teaches one concept.
 
 **Radar and deep learning**
 - [x] Area-scale processing with odc-stac + xarray: a 10 m crop map of the 10 x 10 km square
-- [ ] Sentinel-1 radar time series; 2022 flood mapping
+- [x] Sentinel-1 radar time series; 2022 flood mapping
 - [ ] U-Net crop map with TorchGeo
 - [ ] Benchmark geospatial foundation models (Prithvi, Clay) against the classical baseline
 
