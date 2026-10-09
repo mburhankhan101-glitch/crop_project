@@ -355,6 +355,32 @@ dark to radar as well (a June Sentinel-2 image shows only 4% of the June-dark ar
   areas that were already dark in June.
 - Without the 3 dB rule, the same map showed 106 km² of "flood" in May, before any flood.
 
+## First neural networks (PyTorch)
+
+`s2_torch.py` trains two small PyTorch networks on pixels from the 68 training fields (up to 200 per
+field, taken from the Step 10 cube) and compares them with logistic regression, using the same
+leave-one-strip-out spatial CV. The networks stop early when the loss on a validation strip (one of
+the training strips) stops improving. The blind test fields are not used.
+
+```powershell
+python s2_torch.py
+```
+
+| Model | Input | Parameters | Pixel balanced acc. | Field balanced acc. (majority vote) |
+|---|---|---|---|---|
+| Logistic regression | 16 hand-made features | 51 | 97.8% | **98.0%** |
+| MLP (16 → 64 → 64 → 3) | 16 hand-made features | 5,443 | 96.3% | 97.3% |
+| TempCNN (3 × 1-D convolution) | raw 5-day curves, 5 indices × 49 dates | 212,547 | 95.7% | 96.1% |
+
+- With 2,821 pixels from only 68 fields (median 26 pixels per field), the simplest model is still the
+  best, and the differences are one or two fields. Deep learning needs far more labelled fields.
+- The TempCNN learned its own features from the raw curves and nearly matched the hand-made ones,
+  but it memorised the training pixels within three epochs (training loss near 0) while its
+  validation loss kept jumping: 212,547 weights for 68 fields.
+- Every model gets `g0608` wrong (a short winter crop called wheat), the same weakness as in Step 8.
+
+![Training and validation loss](output/torch/learning_curves.png)
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -387,6 +413,7 @@ Each step adds a feature and teaches one concept.
 **Radar and deep learning**
 - [x] Area-scale processing with odc-stac + xarray: a 10 m crop map of the 10 x 10 km square
 - [x] Sentinel-1 radar time series; 2022 flood mapping
+- [x] First neural networks in PyTorch: an MLP and a 1-D CNN (TempCNN) on pixel time series
 - [ ] U-Net crop map with TorchGeo
 - [ ] Benchmark geospatial foundation models (Prithvi, Clay) against the classical baseline
 

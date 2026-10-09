@@ -51,7 +51,7 @@ COLOURS = {"no data": "#ffffff", "wheat": "#c9962b", "other_crop": "#2c774c", "n
 PIXEL_HA = 0.01  # one 10 m pixel = 100 m2
 
 
-def parse_args():
+def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--known", default="fields.geojson", help="the 3 fields the square is centred on")
     p.add_argument("--size", type=int, default=10_000, help="side of the square in metres")
@@ -77,7 +77,7 @@ def parse_args():
     p.add_argument("--prefetch", type=int, metavar="N",
                    help="only download up to N blocks that are not cached yet, then stop (for short sessions)")
     p.add_argument("--out", default=os.path.join("output", "cube"))
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
 # ---------- the square and the cube ----------
@@ -198,8 +198,9 @@ def regularise(values, valid, days, grid_days, max_gap):
     return out
 
 
-def block_features(raw, days, hazy_days, grid, cargs, args):
-    """Raw pixels of one block -> the 16 set-B features per pixel, and the clear Oct-May date count."""
+def block_features(raw, days, hazy_days, grid, cargs, args, with_series=False):
+    """Raw pixels of one block -> the 16 set-B features per pixel, and the clear Oct-May date count
+    (plus, with with_series, the regular 5-day series of every index as a pixels x columns table)."""
     T, h, w = raw["SCL"].shape
     scl = raw["SCL"]
     cloud = np.stack([grow(np.isin(s, CLOUD_SCL), args.cloud_buffer) for s in scl])
@@ -221,7 +222,7 @@ def block_features(raw, days, hazy_days, grid, cargs, args):
     feats = hand_features(matrix, cargs)
     window = (days >= (date(2025, 10, 1) - date(2025, 1, 1)).days) & (days <= (date(2026, 5, 31) - date(2025, 1, 1)).days)
     n_clear = valid[window].sum(axis=0)
-    return feats, n_clear
+    return (feats, n_clear, matrix) if with_series else (feats, n_clear)
 
 
 # ---------- model, map and outputs ----------

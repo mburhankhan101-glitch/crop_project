@@ -10,3 +10,4 @@ scikit-learn
 xarray
 dask
 odc-stac
+torch  # CPU build: pip install torch --index-url https://download.pytorch.org/whl/cpu

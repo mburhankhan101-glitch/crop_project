@@ -1,0 +1,4 @@
+model,pixel_accuracy,pixel_balanced,field_accuracy,field_balanced,fields_wrong
+logistic,0.988,0.978,0.985,0.98,g0608
+mlp,0.967,0.963,0.971,0.973,"g0002, g0608"
+tempcnn,0.977,0.957,0.971,0.961,"g0807, g0608"
