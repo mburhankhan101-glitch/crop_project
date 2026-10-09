@@ -418,6 +418,24 @@ python s2_unet.py      # about 15-20 minutes on a laptop CPU; run again if it st
 
 ![Per-pixel model vs U-Net](output/unet/unet_vs_pixels.png)
 
+## Field visit: ground truth
+
+Every label so far came from satellite curves or from reading images. `s2_fieldkit.py` prepares a
+field visit to check them on the ground; `s2_ground.py` scores everything against what is found.
+
+```powershell
+python s2_fieldkit.py      # field_kit/: map points, route, printable sheet, form to fill
+python s2_ground.py        # after the visit, with the form saved as labels/ground_truth.csv
+```
+
+- **Priority A:** the 30 blind test fields and g0608 (31 points, a loop of about 50 km straight-line).
+  **Priority B:** the 16 training fields with low-confidence labels.
+- The sheets carry **no labels and no predictions**, so the visit stays independent.
+- At each field: coordinates (one tap opens Google Maps), 4 photos, what grows now (Kharif 2026),
+  and the farmer's answer about last winter (Rabi 2026), with how sure they are.
+- `s2_ground.py` compares the farmers' answers with the labels (by how they were made), the Step 8
+  model, the Step 10 map and the U-Net map, for test and training fields separately.
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
