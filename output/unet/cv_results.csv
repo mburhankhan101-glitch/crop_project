@@ -1,0 +1,4 @@
+model,pixel_balanced,field_accuracy,field_balanced,fields_wrong
+logistic,0.974,0.985,0.98,g0608
+sparse,0.916,0.868,0.896,"g0801, g0002, g0603, g0105, g0904, g0807, g0309, g0608, g0909"
+pseudo,0.978,0.985,0.98,g0608

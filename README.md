@@ -381,6 +381,43 @@ python s2_torch.py
 
 ![Training and validation loss](output/torch/learning_curves.png)
 
+## U-Net: mapping patches instead of single pixels
+
+`s2_unet.py` trains a small U-Net (119,587 weights, written in plain PyTorch) on the 16 features of
+every pixel as 16 image channels. Unlike Steps 10 and 12, it classifies each pixel while looking at
+its neighbourhood (about 400 m around it). Only pixels inside the labelled training fields have
+labels; the loss ignores all others. Two versions:
+
+- **sparse:** the labelled field pixels only (4,749 pixels in 68 fields);
+- **pseudo:** plus pseudo-labels, the pixels where a per-pixel logistic regression is at least 95% sure,
+  weighted 0.3. In each fold that logistic regression is retrained on the fold's training fields only.
+
+Cross-validation is by strip, and every field belongs to the strip of its sample point, so a field
+whose outline crosses into the next strip never lends labels to the fold it is tested in. Finished
+folds are cached, so a run cut short by the time budget continues where it stopped.
+
+```powershell
+python s2_unet.py      # about 15-20 minutes on a laptop CPU; run again if it stops on the time budget
+```
+
+| Model | Pixel balanced acc. | Field balanced acc. | Fields wrong |
+|---|---|---|---|
+| Per-pixel logistic regression | 97.4% | **98.0%** | g0608 |
+| U-Net, sparse labels | 91.6% | 89.6% | 9 fields |
+| U-Net, sparse + pseudo-labels | 97.8% | **98.0%** | g0608 |
+
+- **Sparse labels alone are not enough.** 4,749 pixels, all inside field interiors, never show the
+  network a field edge, a road or a village, so it guesses badly there and misses 9 fields.
+- **Pseudo-labels fix that** and bring the U-Net level with logistic regression. It mostly learns to
+  imitate its teacher, so it cannot be more accurate on these fields, but its map is cleaner.
+- On the whole square, with no extra smoothing: speckle (pixels that disagree with their 3 x 3
+  majority) 4.1% vs 5.2%, uncertain 1.8% vs 2.8%; wheat 53.4% vs 54.9%, both inside the random-sample
+  estimate of 61% ± 10.
+- The roadmap mentioned TorchGeo. Our inputs were already arrays from the Step 10 cube, so plain
+  PyTorch was simpler; TorchGeo's pretrained models are more useful for the foundation-model step.
+
+![Per-pixel model vs U-Net](output/unet/unet_vs_pixels.png)
+
 ## Spectral signatures
 
 `spectral_signatures.py` samples all 12 Sentinel-2 L2A bands at five verified pixels
@@ -414,7 +451,7 @@ Each step adds a feature and teaches one concept.
 - [x] Area-scale processing with odc-stac + xarray: a 10 m crop map of the 10 x 10 km square
 - [x] Sentinel-1 radar time series; 2022 flood mapping
 - [x] First neural networks in PyTorch: an MLP and a 1-D CNN (TempCNN) on pixel time series
-- [ ] U-Net crop map with TorchGeo
+- [x] U-Net crop map (plain PyTorch) with sparse labels and pseudo-labels
 - [ ] Benchmark geospatial foundation models (Prithvi, Clay) against the classical baseline
 
 ## Data
