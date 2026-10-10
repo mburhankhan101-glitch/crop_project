@@ -418,6 +418,45 @@ python s2_unet.py      # about 15-20 minutes on a laptop CPU; run again if it st
 
 ![Per-pixel model vs U-Net](output/unet/unet_vs_pixels.png)
 
+## A foundation model with few labels (Presto)
+
+`s2_presto.py` tests whether a model pretrained on millions of unlabelled satellite time series
+helps when labels are scarce. [Presto](https://github.com/nasaharvest/presto) (NASA Harvest; 404,160
+encoder weights, official checkpoint, loaded with `weights_only=True`) turns each field's monthly
+series (October to May: Sentinel-1 VV/VH, Sentinel-2 RGB, NIR, NDVI) into 128 numbers; a logistic
+regression on those is the "linear probe". Red edge, SWIR, weather and elevation are masked: B6, B7
+and B12 are not in the cube cache, and weather and elevation were not downloaded.
+
+```powershell
+git clone --depth 1 https://github.com/nasaharvest/presto cache/external/presto
+python s2_presto.py
+```
+
+| Features (spatial CV, 68 training fields) | Balanced accuracy |
+|---|---|
+| Hand-made, 16 (Step 8) | **98%** |
+| Presto embedding, 128 | 93% |
+| Both, 144 | 94% |
+| Presto's own monthly inputs, no pretraining, 64 (the control) | 97% |
+
+![Few labels](output/presto/few_labels.png)
+
+| Labelled fields per fold | 3 | 6 | 12 | 24 |
+|---|---|---|---|---|
+| Hand-made | **77%** | **88%** | **93%** | **95%** |
+| Presto | 74% | 81% | 83% | 86% |
+| Same inputs, no pretraining | 69% | 84% | 89% | 92% |
+
+- **Pretraining helped only at the very lowest end:** with 3 labelled fields, Presto beat its own
+  inputs without pretraining by about 4 points. From 6 fields on, the raw inputs did better.
+- **Domain knowledge beat both everywhere.** The 16 hand-made features encode the crop calendar
+  directly (green in winter, gone by April); Presto's general-purpose 128 numbers blur that.
+- Caveats: the labels came from NDVI curves, which favours NDVI-based features; Presto lost its red
+  edge, SWIR, weather and elevation inputs; and it was probed, not fine-tuned.
+- **Why not Prithvi or Clay?** Both are image models that summarise patches of several kilometres
+  (224 pixels of 10-30 m), far larger than these one-acre fields, need the full band set, and have
+  hundreds of millions of weights; Presto works on the pixel time series this project is built on.
+
 ## Field visit: ground truth
 
 Every label so far came from satellite curves or from reading images. `s2_fieldkit.py` prepares a
@@ -470,7 +509,7 @@ Each step adds a feature and teaches one concept.
 - [x] Sentinel-1 radar time series; 2022 flood mapping
 - [x] First neural networks in PyTorch: an MLP and a 1-D CNN (TempCNN) on pixel time series
 - [x] U-Net crop map (plain PyTorch) with sparse labels and pseudo-labels
-- [ ] Benchmark geospatial foundation models (Prithvi, Clay) against the classical baseline
+- [x] Benchmark a geospatial foundation model (Presto) against the classical baseline, with few labels
 
 ## Data
 
