@@ -510,6 +510,7 @@ Each step adds a feature and teaches one concept.
 - [x] First neural networks in PyTorch: an MLP and a 1-D CNN (TempCNN) on pixel time series
 - [x] U-Net crop map (plain PyTorch) with sparse labels and pseudo-labels
 - [x] Benchmark a geospatial foundation model (Presto) against the classical baseline, with few labels
+- [ ] Research paper for IEEE IGARSS 2027 ([paper_igarss/](paper_igarss/README.md)): ground truth, writing, submission by 11 January 2027
 
 ## Data
 

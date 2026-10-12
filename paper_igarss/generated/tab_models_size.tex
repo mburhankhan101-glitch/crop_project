@@ -1,0 +1,12 @@
+\begin{tabular}{lrr}
+\toprule
+Model & Weights & Bal.\ acc. \\
+\midrule
+Logistic regression, 16 features & 51 & 98\% \\
+MLP, 16 features & 5{,}443 & 97\% \\
+TempCNN, raw 5-day curves & 212{,}547 & 96\% \\
+U-Net, sparse labels & 119{,}587 & 90\% \\
+U-Net, + pseudo-labels & 119{,}587 & 98\% \\
+Presto (frozen) + logistic & 404{,}160 & 93\% \\
+\bottomrule
+\end{tabular}

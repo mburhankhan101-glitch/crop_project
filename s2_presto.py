@@ -243,7 +243,7 @@ def main():
         pred = cross_predict(models()["logistic"], X, y, groups, splits)
         bal = balanced_accuracy_score(y, pred)
         acc = float(np.mean(pred == y))
-        rows.append({"features": name, "accuracy": round(acc, 3), "balanced": round(bal, 3),
+        rows.append({"features": name, "accuracy": round(acc, 4), "balanced": round(bal, 4),
                      "wrong": ", ".join(y.index[pred != y])})
         print(f"  {name:<16} accuracy {acc:.0%}  balanced {bal:.0%}  wrong: {', '.join(y.index[pred != y]) or '-'}")
     pd.DataFrame(rows).to_csv(os.path.join(args.out, "cv_results.csv"), index=False)
